@@ -1,8 +1,8 @@
 # TODO: what happens during redo
 
+import logging
 import os
 import zlib
-import logging
 from pathlib import Path
 
 import ida_auto
@@ -10,9 +10,8 @@ import ida_expr
 import ida_idaapi
 import ida_kernwin
 import ida_netnode
-
-from oplog_hooks import IDBChangedHook
 from oplog_events import Events
+from oplog_hooks import IDBChangedHook
 
 logger = logging.getLogger("oplog")
 
@@ -118,7 +117,9 @@ class oplog_plugmod_t(ida_idaapi.plugmod_t):
                 logger.error("failed to export events: %s", e)
                 return 0
 
-        if ida_expr.add_idc_func("oplog_export", oplog_export_handler, (ida_expr.VT_STR,)):
+        if ida_expr.add_idc_func(
+            "oplog_export", oplog_export_handler, (ida_expr.VT_STR,)
+        ):
             logger.debug("registered oplog_export IDC function")
         else:
             logger.warning("failed to register oplog_export IDC function")
@@ -128,7 +129,9 @@ class oplog_plugmod_t(ida_idaapi.plugmod_t):
 
     def init(self):
         if not ida_auto.auto_is_ok():
-            logger.debug("waiting for auto-analysis to complete before subscribing to events")
+            logger.debug(
+                "waiting for auto-analysis to complete before subscribing to events"
+            )
             ida_auto.auto_wait()
             logger.debug("auto-analysis complete, now subscribing to events")
 

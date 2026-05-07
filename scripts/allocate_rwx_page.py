@@ -9,7 +9,7 @@ def main():
         return
 
     ptr = idawilli.dbg.allocate_rwx(size)
-    print('allocated 0x%x bytes at 0x%x' % (size, ptr))
+    print("allocated 0x%x bytes at 0x%x" % (size, ptr))
 
 
 main()

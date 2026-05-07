@@ -1,32 +1,30 @@
-'''
+"""
 IDAPython script that colors instructions.
 
 Author: Willi Ballenthin <william.ballenthin@fireeye.com>
 Licence: Apache 2.0
-'''
+"""
+
 import logging
 from collections import namedtuple
 
-import ida_settings
-
-import idc
-import idaapi
-import idautils
-import ida_ua
 import ida_bytes
 import ida_segment
-
+import ida_settings
+import ida_ua
+import idaapi
+import idautils
+import idc
 
 logger = logging.getLogger(__name__)
-settings = ida_settings.IDASettings('idawilli.color')
+settings = ida_settings.IDASettings("idawilli.color")
 
-CALL_COLOR = settings.get('colors.instructions.call', 0xD7C2C0)      # blueish
-ENCRYPT_COLOR = settings.get('colors.behaviors.encrypt', 0xC0C2D7)   # redish
-ANTIANALYSIS_COLOR = settings.get(
-    'colors.behaviors.anti-analysis', 0xC0C2D7)  # redish
+CALL_COLOR = settings.get("colors.instructions.call", 0xD7C2C0)  # blueish
+ENCRYPT_COLOR = settings.get("colors.behaviors.encrypt", 0xC0C2D7)  # redish
+ANTIANALYSIS_COLOR = settings.get("colors.behaviors.anti-analysis", 0xC0C2D7)  # redish
 
 
-Segment = namedtuple('Segment', ['start', 'end', 'name'])
+Segment = namedtuple("Segment", ["start", "end", "name"])
 
 
 def enum_segments():
@@ -47,22 +45,22 @@ def color_head(ea):
         return
 
     mnem = ida_ua.print_insn_mnem(ea)
-    if mnem == 'call':
-        logger.debug('call: 0x%x', ea)
+    if mnem == "call":
+        logger.debug("call: 0x%x", ea)
         idc.set_color(ea, idc.CIC_ITEM, CALL_COLOR)
-    elif mnem == 'xor':
+    elif mnem == "xor":
         if idc.get_operand_value(ea, 0) != idc.get_operand_value(ea, 1):
-            logger.debug('non-zero xor: 0x%x', ea)
+            logger.debug("non-zero xor: 0x%x", ea)
             idc.set_color(ea, idc.CIC_ITEM, ENCRYPT_COLOR)
-    elif mnem in ('sdit', 'sgdt', 'sldt', 'smsw', 'str', 'in', 'cpuid'):
-        logger.debug('anti-vm: 0x%x', ea)
+    elif mnem in ("sdit", "sgdt", "sldt", "smsw", "str", "in", "cpuid"):
+        logger.debug("anti-vm: 0x%x", ea)
         idc.set_color(ea, idc.CIC_ITEM, ANTIANALYSIS_COLOR)
-    elif mnem == 'in':
+    elif mnem == "in":
         if idc.get_operand_value(ea, 0) in ("3", "2D"):
-            logger.debug('anti-debug: 0x%x', ea)
+            logger.debug("anti-debug: 0x%x", ea)
             idc.set_color(ea, idc.CIC_ITEM, ANTIANALYSIS_COLOR)
-    elif mnem in ('rdtsc', 'icebp'):
-        logger.debug('anti-debug: 0x%x', ea)
+    elif mnem in ("rdtsc", "icebp"):
+        logger.debug("anti-debug: 0x%x", ea)
         idc.set_color(ea, idc.CIC_ITEM, ANTIANALYSIS_COLOR)
 
 
@@ -74,6 +72,6 @@ def main(argv=None):
         color_head(head)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)
     main()

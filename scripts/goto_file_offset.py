@@ -1,6 +1,6 @@
-import ida_loader
 import ida_idaapi
 import ida_kernwin
+import ida_loader
 
 
 def main():
@@ -10,10 +10,10 @@ def main():
 
     ea = ida_loader.get_fileregion_ea(offset)
     if ea == ida_idaapi.BADADDR:
-        print('error: EA for file offset not found')
+        print("error: EA for file offset not found")
         return
 
-    print('EA for file offset: 0x%x' % (ea))
+    print("EA for file offset: 0x%x" % (ea))
     ida_kernwin.jumpto(ea)
 
 

@@ -3,16 +3,17 @@ from pathlib import Path
 
 import pytest
 from conftest import run_ida_script
-
 from oplog_events import (
     EventList,
+    callee_addr_changed_event,
     determined_main_event,
     idasgn_matched_ea_event,
-    callee_addr_changed_event,
 )
 
 
-@pytest.mark.xfail(reason="determined_main only fires from IDA's internal analysis engine, not via Python API")
+@pytest.mark.xfail(
+    reason="determined_main only fires from IDA's internal analysis engine, not via Python API"
+)
 def test_determined_main(test_binary: Path, session_idauser: Path, work_dir: Path):
     """Test that setting the main function triggers determined_main event."""
     events_path = work_dir / "events.json"
@@ -45,7 +46,9 @@ def test_determined_main(test_binary: Path, session_idauser: Path, work_dir: Pat
     assert actual == expected
 
 
-@pytest.mark.xfail(reason="idasgn_matched_ea requires FLIRT signature files matching the test binary")
+@pytest.mark.xfail(
+    reason="idasgn_matched_ea requires FLIRT signature files matching the test binary"
+)
 def test_idasgn_matched_ea(test_binary: Path, session_idauser: Path, work_dir: Path):
     """Test that FLIRT signature matching triggers idasgn_matched_ea event."""
     events_path = work_dir / "events.json"
@@ -79,7 +82,9 @@ def test_idasgn_matched_ea(test_binary: Path, session_idauser: Path, work_dir: P
     assert actual == expected
 
 
-@pytest.mark.xfail(reason="callee_addr_changed only fires from UI plugin (Alt+F11), no public Python API exists")
+@pytest.mark.xfail(
+    reason="callee_addr_changed only fires from UI plugin (Alt+F11), no public Python API exists"
+)
 def test_callee_addr_changed(test_binary: Path, session_idauser: Path, work_dir: Path):
     """Test that changing callee address triggers callee_addr_changed event.
 
@@ -124,7 +129,9 @@ def test_callee_addr_changed(test_binary: Path, session_idauser: Path, work_dir:
     )
 
     event_list = EventList.model_validate_json(events_path.read_text())
-    callee_events = [e for e in event_list.root if isinstance(e, callee_addr_changed_event)]
+    callee_events = [
+        e for e in event_list.root if isinstance(e, callee_addr_changed_event)
+    ]
 
     assert len(callee_events) >= 1
 

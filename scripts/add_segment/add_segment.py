@@ -1,22 +1,22 @@
-'''
+"""
 IDAPython plugin that adds the contents of a file as a new segment in an existing idb.
 Prompts the user for:
   - file path
   - segment name
   - segment starting offset
-  
+
 Useful for reversing engineering packed software and shellcode.
 
 Author: Willi Ballenthin <william.ballenthin@fireeye.com>
 Licence: Apache 2.0
-'''
+"""
+
 import logging
 from collections import namedtuple
 
-import idc
 import idaapi
 import idautils
-
+import idc
 
 logger = logging.getLogger(__name__)
 
@@ -25,25 +25,29 @@ class BadInputError(Exception):
     pass
 
 
-Segment = namedtuple('SegmentBuffer', ['path', 'name', 'addr'])
+Segment = namedtuple("SegmentBuffer", ["path", "name", "addr"])
 
 
 def prompt_for_segment():
-    ''' :returns: a Segment instance, or raises BadInputError '''
+    """:returns: a Segment instance, or raises BadInputError"""
+
     class MyForm(idaapi.Form):
         def __init__(self):
-            idaapi.Form.__init__(self, """STARTITEM 0
+            idaapi.Form.__init__(
+                self,
+                """STARTITEM 0
 add segment by buffer
 
 <##buffer path:{path}>
 <##segment name:{name}>
 <##segment start address:{addr}>
 """,
-                                 {
-                                     'path': idaapi.Form.FileInput(open=True),
-                                     'name': idaapi.Form.StringInput(),
-                                     'addr': idaapi.Form.NumericInput(tp=Form.FT_ADDR),
-                                 })
+                {
+                    "path": idaapi.Form.FileInput(open=True),
+                    "name": idaapi.Form.StringInput(),
+                    "addr": idaapi.Form.NumericInput(tp=Form.FT_ADDR),
+                },
+            )
 
         def OnFormChange(self, fid):
             return 1
@@ -55,18 +59,18 @@ add segment by buffer
     f.addr.value = 0x0
     ok = f.Execute()
     if ok != 1:
-        raise BadInputError('user cancelled')
+        raise BadInputError("user cancelled")
 
     path = f.path.value
     if path == "" or path is None:
-        raise BadInputError('bad path provided')
+        raise BadInputError("bad path provided")
 
     if not os.path.exists(path):
-        raise BadInputError('file doesn\'t exist')
+        raise BadInputError("file doesn't exist")
 
     name = f.name.value
     if name == "" or name is None:
-        raise BadInputError('bad name provided')
+        raise BadInputError("bad name provided")
 
     addr = f.addr.value
     f.Free()
@@ -80,10 +84,10 @@ def main(argv=None):
     try:
         seg = prompt_for_segment()
     except BadInputError:
-        logger.error('bad input, exiting...')
+        logger.error("bad input, exiting...")
         return -1
 
-    with open(seg.path, 'rb') as f:
+    with open(seg.path, "rb") as f:
         buf = f.read()
 
     seglen = len(buf)
@@ -91,17 +95,17 @@ def main(argv=None):
         seglen = seglen + (0x1000 - (seglen % 0x1000))
 
     if not idc.AddSeg(seg.addr, seg.addr + seglen, 0, 1, 0, idaapi.scPub):
-        logger.error('failed to add segment: 0x%x', seg.addr)
+        logger.error("failed to add segment: 0x%x", seg.addr)
         return -1
 
     if not idc.set_segm_name(seg.addr, seg.name):
-        logger.warning('failed to rename segment: %s', seg.name)
+        logger.warning("failed to rename segment: %s", seg.name)
 
-    if not idc.set_segm_class(seg.addr, 'CODE'):
-        logger.warning('failed to set segment class CODE: %s', seg.name)
+    if not idc.set_segm_class(seg.addr, "CODE"):
+        logger.warning("failed to set segment class CODE: %s", seg.name)
 
     if not idc.set_segm_attr(seg.addr, SEGATTR_ALIGN, idc.saRelPara):
-        logger.warning('failed to align segment: %s', seg.name)
+        logger.warning("failed to align segment: %s", seg.name)
 
     ida_bytes.patch_bytes(seg.addr, buf)
 
@@ -128,6 +132,6 @@ def PLUGIN_ENTRY():
     return AddSegmentPlugin()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)
     main()

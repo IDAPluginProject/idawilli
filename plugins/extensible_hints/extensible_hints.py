@@ -1,18 +1,19 @@
-'''
+"""
 example of:
   - providing custom UI hints with dynamic data triggered by icons in the line prefix
 
 Author: Willi Ballenthin <william.ballenthin@fireeye.com>
 Licence: Apache 2.0
-'''
-import sys
-import datetime
+"""
 
-import idc
+import datetime
+import sys
+
+import ida_lines
+import ida_ua
 import idaapi
 import idautils
-import ida_ua
-import ida_lines
+import idc
 
 ###############################################################################
 #### begin: idapython_lex_curline
@@ -137,7 +138,6 @@ def lex(curline):
     offset = 0
     cur_word: list[str] = []
     while offset < len(curline):
-
         c = curline[offset]
 
         if c == ida_lines.COLOR_ON:
@@ -221,8 +221,6 @@ def get_token_at_char(curline, index):
 ###############################################################################
 
 
-
-
 # the only way to install this is by instantiating an instance *from within a plugin*.
 class Prefixer(ida_lines.user_defined_prefix_t):
     def __init__(self):
@@ -247,7 +245,7 @@ class HintsHooks(idaapi.UI_Hooks):
             return ("<MSDN documentation here>", 1)
 
     def get_ea_hint(self, ea):
-        return datetime.datetime.now().isoformat(' ')
+        return datetime.datetime.now().isoformat(" ")
 
 
 class DynHints2Plugin(idaapi.plugin_t):
@@ -267,12 +265,12 @@ class DynHints2Plugin(idaapi.plugin_t):
         return idaapi.PLUGIN_OK
 
     def run(self, arg):
-        print('hints3: run')
+        print("hints3: run")
         self.hooks.hook()
         self.prefix = Prefixer()
 
     def term(self):
-        print('hints3: term')
+        print("hints3: term")
         self.hooks.unhook()
         self.prefix = None
 

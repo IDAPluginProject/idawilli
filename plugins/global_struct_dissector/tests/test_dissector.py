@@ -266,7 +266,10 @@ def test_union(test_binary: Path, session_idauser: Path, work_dir: Path):
     lines = json.loads(output_path.read_text())
 
     assert ".data:00403060                 union TestUnion {" in lines
-    assert ".data:00403060                   /* union - showing all interpretations */" in lines
+    assert (
+        ".data:00403060                   /* union - showing all interpretations */"
+        in lines
+    )
     # Both members should show offset +0x00 since it's a union
     assert ".data:00403060                   +0x00: as_int = 0x6E72656B" in lines
     assert ".data:00403060                   +0x00: as_float = 1.87545e+28" in lines
@@ -333,7 +336,9 @@ def test_struct_with_pointer(test_binary: Path, session_idauser: Path, work_dir:
     assert ".data:00403050                 }" in lines
 
 
-def test_code_segment_not_dissected(test_binary: Path, session_idauser: Path, work_dir: Path):
+def test_code_segment_not_dissected(
+    test_binary: Path, session_idauser: Path, work_dir: Path
+):
     """Test that the dissector does not activate for code segments."""
     output_path = work_dir / "lines.json"
 
@@ -376,7 +381,9 @@ def test_code_segment_not_dissected(test_binary: Path, session_idauser: Path, wo
     assert any(".text:" in l for l in lines)
 
 
-def test_no_type_not_dissected(test_binary: Path, session_idauser: Path, work_dir: Path):
+def test_no_type_not_dissected(
+    test_binary: Path, session_idauser: Path, work_dir: Path
+):
     """Test that data without a struct type applied is not dissected."""
     output_path = work_dir / "lines.json"
 
@@ -427,7 +434,9 @@ def test_no_type_not_dissected(test_binary: Path, session_idauser: Path, work_di
     assert any("db " in l or "db," in l for l in lines)
 
 
-def test_struct_with_byte_field(test_binary: Path, session_idauser: Path, work_dir: Path):
+def test_struct_with_byte_field(
+    test_binary: Path, session_idauser: Path, work_dir: Path
+):
     """Test dissection of a struct with a single-byte char field shows char representation."""
     output_path = work_dir / "lines.json"
 
@@ -488,7 +497,9 @@ def test_struct_with_byte_field(test_binary: Path, session_idauser: Path, work_d
     assert ".data:00403070                 }" in lines
 
 
-def test_struct_with_array_of_ints(test_binary: Path, session_idauser: Path, work_dir: Path):
+def test_struct_with_array_of_ints(
+    test_binary: Path, session_idauser: Path, work_dir: Path
+):
     """Test dissection of a struct with an array of integers (non-struct elements)."""
     output_path = work_dir / "lines.json"
 

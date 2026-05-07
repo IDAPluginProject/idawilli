@@ -1,18 +1,17 @@
 import logging
-from typing import TYPE_CHECKING
-from datetime import datetime
 from dataclasses import dataclass
+from datetime import datetime
+from typing import TYPE_CHECKING
 
-import ida_name
 import ida_bytes
 import ida_funcs
-import ida_lines
 import ida_idaapi
 import ida_kernwin
-from qtpy import QtCore
-
+import ida_lines
+import ida_name
 from oplog_events import Events, current_item_changed_event
 from oplog_render import render_event
+from qtpy import QtCore
 
 if TYPE_CHECKING:
     from oplog import oplog_plugmod_t
@@ -31,7 +30,9 @@ def addr_from_tag(raw: bytes) -> int:
         raise
 
 
-def get_tagged_line_section_byte_offsets(section: ida_kernwin.tagged_line_section_t) -> tuple[int, int]:
+def get_tagged_line_section_byte_offsets(
+    section: ida_kernwin.tagged_line_section_t,
+) -> tuple[int, int]:
     s = str(section)
     text_start_index = s.index("text_start=")
     text_end_index = s.index("text_end=")
@@ -62,7 +63,9 @@ def get_current_tag(line: str, x: int) -> TaggedLineSection:
 
     ret.tag = current_section.tag
     boring_line = ida_lines.tag_remove(line)
-    ret.string = boring_line[current_section.start : current_section.start + current_section.length]
+    ret.string = boring_line[
+        current_section.start : current_section.start + current_section.length
+    ]
 
     current_section_start, _ = get_tagged_line_section_byte_offsets(current_section)
     addr_section = tls.nearest_before(current_section, x, ida_lines.COLOR_ADDR)
@@ -73,7 +76,9 @@ def get_current_tag(line: str, x: int) -> TaggedLineSection:
 
         if current_section_start == addr_tag_start:
             raw = line.encode("utf-8")
-            addr = addr_from_tag(raw[addr_tag_start : addr_tag_start + ida_lines.COLOR_ADDR_SIZE + 2])
+            addr = addr_from_tag(
+                raw[addr_tag_start : addr_tag_start + ida_lines.COLOR_ADDR_SIZE + 2]
+            )
             ret.address = addr
 
     return ret
@@ -103,7 +108,9 @@ class oplog_viewer_t(ida_kernwin.simplecustviewer_t):
         if not super().Show(*args):
             return False
 
-        ida_kernwin.attach_action_to_popup(self.GetWidget(), None, save_events_to_file_handler_t.ACTION_NAME)
+        ida_kernwin.attach_action_to_popup(
+            self.GetWidget(), None, save_events_to_file_handler_t.ACTION_NAME
+        )
         return True
 
     def on_timer_timeout(self):
@@ -179,7 +186,9 @@ class save_events_to_file_handler_t(ida_kernwin.action_handler_t):
         self.events = events
 
     def activate(self, ctx):
-        filename = ida_kernwin.ask_file(1, "*.json", "Select the file to store events in a JSON format")
+        filename = ida_kernwin.ask_file(
+            1, "*.json", "Select the file to store events in a JSON format"
+        )
         if filename is None:
             return
 
@@ -212,7 +221,11 @@ class UILocationHook(ida_kernwin.UI_Hooks):
             return
 
         current_name = ida_name.get_name(current_head_ea)
-        prev_name = ida_name.get_name(self._prev_item_ea or 0) if self._prev_item_ea is not None else ""
+        prev_name = (
+            ida_name.get_name(self._prev_item_ea or 0)
+            if self._prev_item_ea is not None
+            else ""
+        )
 
         self._prev_item_ea = current_head_ea
 
@@ -255,22 +268,36 @@ class UIManager:
 
         ida_kernwin.register_action(
             ida_kernwin.action_desc_t(
-                "oplog:create", oplog_viewer_t.TITLE, create_oplog_widget_action_handler_t(self.plugmod)
+                "oplog:create",
+                oplog_viewer_t.TITLE,
+                create_oplog_widget_action_handler_t(self.plugmod),
             )
         )
-        ida_kernwin.attach_action_to_menu("View/Open subviews/Strings", "oplog:create", ida_kernwin.SETMENU_APP)
+        ida_kernwin.attach_action_to_menu(
+            "View/Open subviews/Strings", "oplog:create", ida_kernwin.SETMENU_APP
+        )
 
         handler = save_events_to_file_handler_t(self.events)
-        desc = ida_kernwin.action_desc_t(save_events_to_file_handler_t.ACTION_NAME, "Save to file...", handler)
+        desc = ida_kernwin.action_desc_t(
+            save_events_to_file_handler_t.ACTION_NAME, "Save to file...", handler
+        )
         if not ida_kernwin.register_action(desc):
-            logger.warning('Failed to register action "%s"' % save_events_to_file_handler_t.ACTION_NAME)
+            logger.warning(
+                'Failed to register action "%s"'
+                % save_events_to_file_handler_t.ACTION_NAME
+            )
 
     def teardown(self):
         if not ida_kernwin.unregister_action(save_events_to_file_handler_t.ACTION_NAME):
-            logger.warning('Failed to unregister action "%s"' % save_events_to_file_handler_t.ACTION_NAME)
+            logger.warning(
+                'Failed to unregister action "%s"'
+                % save_events_to_file_handler_t.ACTION_NAME
+            )
 
         ida_kernwin.unregister_action("oplog:create")
-        ida_kernwin.detach_action_from_menu("View/Open subviews/Strings", "oplog:create")
+        ida_kernwin.detach_action_from_menu(
+            "View/Open subviews/Strings", "oplog:create"
+        )
 
         if self.installation_hooks:
             self.installation_hooks.unhook()

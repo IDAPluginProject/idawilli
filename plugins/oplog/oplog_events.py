@@ -1,18 +1,18 @@
 import logging
 import threading
+from datetime import datetime
 from enum import IntEnum
 from typing import TYPE_CHECKING, Any, Literal
-from datetime import datetime
 
-from pydantic import Field, BaseModel, RootModel, field_validator
+from pydantic import BaseModel, Field, RootModel, field_validator
 
 if TYPE_CHECKING:
-    import ida_ua
-    import ida_nalt
     import ida_funcs
+    import ida_nalt
     import ida_range
     import ida_segment
     import ida_typeinf
+    import ida_ua
 
 logger = logging.getLogger(__name__)
 
@@ -272,7 +272,9 @@ class CatchModel(BaseModel):
     @classmethod
     def from_catch_t(cls, catch_obj) -> "CatchModel":
         return cls(
-            ranges=[RangeModel(start_ea=r.start_ea, end_ea=r.end_ea) for r in catch_obj],
+            ranges=[
+                RangeModel(start_ea=r.start_ea, end_ea=r.end_ea) for r in catch_obj
+            ],
             disp=catch_obj.disp,
             fpreg=catch_obj.fpreg,
             obj=catch_obj.obj,
@@ -295,7 +297,9 @@ class SehModel(BaseModel):
             ranges=[RangeModel(start_ea=r.start_ea, end_ea=r.end_ea) for r in seh_obj],
             disp=seh_obj.disp,
             fpreg=seh_obj.fpreg,
-            filter_ranges=[RangeModel(start_ea=r.start_ea, end_ea=r.end_ea) for r in seh_obj.filter],
+            filter_ranges=[
+                RangeModel(start_ea=r.start_ea, end_ea=r.end_ea) for r in seh_obj.filter
+            ],
             seh_code=seh_obj.seh_code,
         )
 
@@ -467,8 +471,8 @@ class OpInfoModel(BaseModel):
 
     @classmethod
     def from_opinfo_t(cls, opinfo: "ida_nalt.opinfo_t") -> "OpInfoModel | None":
-        import idc
         import ida_typeinf
+        import idc
 
         if opinfo is None:
             return None
@@ -515,8 +519,8 @@ class OpInfoModel(BaseModel):
     @classmethod
     def from_database(cls, ea: int, n: int) -> "OpInfoModel | None":
         """Create OpInfoModel by querying the database for current operand info at ea, n."""
-        import ida_nalt
         import ida_bytes
+        import ida_nalt
         import ida_typeinf
 
         flags = ida_bytes.get_flags(ea)

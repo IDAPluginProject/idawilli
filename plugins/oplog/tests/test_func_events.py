@@ -3,35 +3,34 @@ from pathlib import Path
 
 import pytest
 from conftest import run_ida_script
-
 from oplog_events import (
-    UdmModel,
     EventList,
     FuncModel,
     RangeModel,
-    func_added_event,
-    func_deleted_event,
-    func_updated_event,
-    set_func_end_event,
+    UdmModel,
     deleting_func_event,
+    deleting_func_tail_event,
+    deleting_tryblks_event,
     frame_created_event,
     frame_deleted_event,
     frame_expanded_event,
-    set_func_start_event,
-    stkpnts_changed_event,
-    tryblks_updated_event,
-    deleting_tryblks_event,
-    updating_tryblks_event,
     frame_udm_changed_event,
     frame_udm_created_event,
     frame_udm_deleted_event,
     frame_udm_renamed_event,
-    func_tail_deleted_event,
-    deleting_func_tail_event,
+    func_added_event,
+    func_deleted_event,
     func_noret_changed_event,
     func_tail_appended_event,
+    func_tail_deleted_event,
+    func_updated_event,
+    set_func_end_event,
+    set_func_start_event,
+    stkpnts_changed_event,
     tail_owner_changed_event,
     thunk_func_created_event,
+    tryblks_updated_event,
+    updating_tryblks_event,
 )
 
 
@@ -355,7 +354,9 @@ def test_thunk_func_created(test_binary: Path, session_idauser: Path, work_dir: 
     )
 
     event_list = EventList.model_validate_json(events_path.read_text())
-    thunk_events = [e for e in event_list.root if isinstance(e, thunk_func_created_event)]
+    thunk_events = [
+        e for e in event_list.root if isinstance(e, thunk_func_created_event)
+    ]
     assert len(thunk_events) >= 1
 
     matching = [e for e in thunk_events if e.pfn.start_ea == 0x401000]
@@ -423,7 +424,9 @@ def test_func_tail_appended(test_binary: Path, session_idauser: Path, work_dir: 
     )
 
     event_list = EventList.model_validate_json(events_path.read_text())
-    tail_events = [e for e in event_list.root if isinstance(e, func_tail_appended_event)]
+    tail_events = [
+        e for e in event_list.root if isinstance(e, func_tail_appended_event)
+    ]
     assert len(tail_events) >= 1
 
     matching = [e for e in tail_events if e.pfn.start_ea == 0x401000]
@@ -477,8 +480,12 @@ def test_func_tail_deleted(test_binary: Path, session_idauser: Path, work_dir: P
     )
 
     event_list = EventList.model_validate_json(events_path.read_text())
-    deleting_events = [e for e in event_list.root if isinstance(e, deleting_func_tail_event)]
-    deleted_events = [e for e in event_list.root if isinstance(e, func_tail_deleted_event)]
+    deleting_events = [
+        e for e in event_list.root if isinstance(e, deleting_func_tail_event)
+    ]
+    deleted_events = [
+        e for e in event_list.root if isinstance(e, func_tail_deleted_event)
+    ]
 
     assert len(deleting_events) >= 1
     assert len(deleted_events) >= 1
@@ -584,7 +591,9 @@ def test_tail_owner_changed(test_binary: Path, session_idauser: Path, work_dir: 
     )
 
     event_list = EventList.model_validate_json(events_path.read_text())
-    owner_change_events = [e for e in event_list.root if isinstance(e, tail_owner_changed_event)]
+    owner_change_events = [
+        e for e in event_list.root if isinstance(e, tail_owner_changed_event)
+    ]
     assert len(owner_change_events) >= 1
 
     actual = owner_change_events[-1]
@@ -645,7 +654,9 @@ def test_func_noret_changed(test_binary: Path, session_idauser: Path, work_dir: 
     )
 
     event_list = EventList.model_validate_json(events_path.read_text())
-    noret_events = [e for e in event_list.root if isinstance(e, func_noret_changed_event)]
+    noret_events = [
+        e for e in event_list.root if isinstance(e, func_noret_changed_event)
+    ]
     assert len(noret_events) >= 1
 
     matching = [e for e in noret_events if e.pfn.start_ea == 0x401000]
@@ -706,9 +717,15 @@ def test_tryblks_events(test_binary: Path, session_idauser: Path, work_dir: Path
     )
 
     event_list = EventList.model_validate_json(events_path.read_text())
-    updating_events = [e for e in event_list.root if isinstance(e, updating_tryblks_event)]
-    updated_events = [e for e in event_list.root if isinstance(e, tryblks_updated_event)]
-    deleting_events = [e for e in event_list.root if isinstance(e, deleting_tryblks_event)]
+    updating_events = [
+        e for e in event_list.root if isinstance(e, updating_tryblks_event)
+    ]
+    updated_events = [
+        e for e in event_list.root if isinstance(e, tryblks_updated_event)
+    ]
+    deleting_events = [
+        e for e in event_list.root if isinstance(e, deleting_tryblks_event)
+    ]
 
     assert isinstance(updating_events, list)
     assert isinstance(updated_events, list)
@@ -954,7 +971,9 @@ def test_frame_udm_created(test_binary: Path, session_idauser: Path, work_dir: P
     matching = [e for e in event_list.root if isinstance(e, frame_udm_created_event)]
     assert len(matching) >= 1
 
-    actual = [e for e in matching if e.func_ea == 0x401000 and e.udm.name == "my_new_var"][-1]
+    actual = [
+        e for e in matching if e.func_ea == 0x401000 and e.udm.name == "my_new_var"
+    ][-1]
 
     expected = frame_udm_created_event(
         event_name="frame_udm_created",
@@ -1060,7 +1079,9 @@ def test_frame_udm_renamed(test_binary: Path, session_idauser: Path, work_dir: P
     matching = [e for e in event_list.root if isinstance(e, frame_udm_renamed_event)]
     assert len(matching) >= 1
 
-    actual = [e for e in matching if e.func_ea == 0x401000 and e.udm.name == "renamed_var"][-1]
+    actual = [
+        e for e in matching if e.func_ea == 0x401000 and e.udm.name == "renamed_var"
+    ][-1]
 
     expected = frame_udm_renamed_event(
         event_name="frame_udm_renamed",

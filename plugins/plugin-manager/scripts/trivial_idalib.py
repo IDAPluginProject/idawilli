@@ -1,10 +1,9 @@
-import sys
 import logging
+import sys
 
-import idapro
 import ida_auto
 import ida_hexrays
-
+import idapro
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)

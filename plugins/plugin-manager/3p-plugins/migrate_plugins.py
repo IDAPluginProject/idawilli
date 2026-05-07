@@ -10,13 +10,13 @@ Usage:
     python migrate_plugins.py  # migrates all plugins
 """
 
-import shutil
 import fnmatch
-import tempfile
+import shutil
 import subprocess
-from typing import List, Optional
+import tempfile
+from dataclasses import dataclass, field
 from pathlib import Path
-from dataclasses import field, dataclass
+from typing import List, Optional
 
 from rich import print
 
@@ -518,13 +518,17 @@ class ReplaceText(FileTransformation):
 
     def apply(self, work_dir: Path) -> None:
         for file_path in work_dir.rglob("*"):
-            if file_path.is_file() and fnmatch.fnmatch(file_path.name, self.file_pattern):
+            if file_path.is_file() and fnmatch.fnmatch(
+                file_path.name, self.file_pattern
+            ):
                 try:
                     content = file_path.read_text(encoding="utf-8")
                     if self.old_text in content:
                         new_content = content.replace(self.old_text, self.new_text)
                         file_path.write_text(new_content, encoding="utf-8")
-                        print(f"  [cyan]Replaced text[/] in {file_path.relative_to(work_dir)}")
+                        print(
+                            f"  [cyan]Replaced text[/] in {file_path.relative_to(work_dir)}"
+                        )
                 except UnicodeDecodeError:
                     # Skip binary files
                     pass
@@ -573,7 +577,11 @@ PLUGINS = {
         ],
         transformations=[
             MoveFile("hrdevhelper.py", "hrdh/hrdevhelper.py"),
-            ReplaceText("*.py", "from hrdevhelper import HRDevHelper", "# from hrdevhelper import HRDevHelper"),
+            ReplaceText(
+                "*.py",
+                "from hrdevhelper import HRDevHelper",
+                "# from hrdevhelper import HRDevHelper",
+            ),
             CreateFile("pyproject.toml", HRDEVHELPER_PYPROJECT),
         ],
     ),
@@ -614,7 +622,11 @@ PLUGINS = {
             # Create pyproject.toml
             CreateFile("pyproject.toml", IDA_TERMINAL_PYPROJECT),
             # Update the plugin.py to work with the new structure
-            ReplaceText("plugin.py", "from termqt import Terminal", "from ida_terminal_module.termqt import Terminal"),
+            ReplaceText(
+                "plugin.py",
+                "from termqt import Terminal",
+                "from ida_terminal_module.termqt import Terminal",
+            ),
             ReplaceText(
                 "plugin.py",
                 "from termqt import TerminalPOSIXExecIO",
@@ -659,7 +671,10 @@ PLUGINS = {
             # Move the main plugin file into a package structure
             MoveFile("swift_string_inspector.py", "swiftstringinspector/plugin.py"),
             # Create __init__.py for the package
-            CreateFile("swiftstringinspector/__init__.py", "# SwiftStringInspector Plugin Package"),
+            CreateFile(
+                "swiftstringinspector/__init__.py",
+                "# SwiftStringInspector Plugin Package",
+            ),
             # Create pyproject.toml
             CreateFile("pyproject.toml", SWIFTSTRINGINSPECTOR_PYPROJECT),
         ],
@@ -744,11 +759,17 @@ PLUGINS = {
         ],
         transformations=[
             # Move the main plugin file into a package structure
-            MoveFile("IdaScripts/plugins/string_from_selection.py", "string_from_selection/plugin.py"),
+            MoveFile(
+                "IdaScripts/plugins/string_from_selection.py",
+                "string_from_selection/plugin.py",
+            ),
             # Clean up the intermediate directory
             DeleteDirectory("IdaScripts"),
             # Create __init__.py for the package
-            CreateFile("string_from_selection/__init__.py", "# String From Selection Plugin Package"),
+            CreateFile(
+                "string_from_selection/__init__.py",
+                "# String From Selection Plugin Package",
+            ),
             # Create pyproject.toml
             CreateFile("pyproject.toml", STRING_FROM_SELECTION_PYPROJECT),
         ],
@@ -854,16 +875,22 @@ def matches_pattern(file_path: Path, patterns: List[str]) -> bool:
         # Convert glob patterns to work with full paths
         if "**" in pattern:
             # Handle recursive patterns
-            if fnmatch.fnmatch(path_str, pattern) or fnmatch.fnmatch(path_str, f"*/{pattern}"):
+            if fnmatch.fnmatch(path_str, pattern) or fnmatch.fnmatch(
+                path_str, f"*/{pattern}"
+            ):
                 return True
         else:
             # Handle simple patterns
-            if fnmatch.fnmatch(file_path.name, pattern) or fnmatch.fnmatch(path_str, pattern):
+            if fnmatch.fnmatch(file_path.name, pattern) or fnmatch.fnmatch(
+                path_str, pattern
+            ):
                 return True
     return False
 
 
-def print_directory_tree(directory: Path, prefix: str = "", is_last: bool = True) -> None:
+def print_directory_tree(
+    directory: Path, prefix: str = "", is_last: bool = True
+) -> None:
     """Print directory contents in ASCII tree format."""
     if not directory.exists():
         return
@@ -891,7 +918,12 @@ def print_directory_tree(directory: Path, prefix: str = "", is_last: bool = True
             print_directory_tree(item, next_prefix, is_last_item)
 
 
-def copy_matching_files(src_dir: Path, dst_dir: Path, include_patterns: List[str], exclude_patterns: List[str]) -> None:
+def copy_matching_files(
+    src_dir: Path,
+    dst_dir: Path,
+    include_patterns: List[str],
+    exclude_patterns: List[str],
+) -> None:
     """Copy files matching include patterns but not exclude patterns."""
     for src_file in src_dir.rglob("*"):
         if not src_file.is_file():
@@ -943,7 +975,9 @@ def migrate_plugin(plugin_name: str, config: PluginConfig, output_dir: Path) -> 
 
         # Copy matching files
         print("  [bold yellow]Copying files[/]...")
-        copy_matching_files(repo_dir, plugin_output_dir, config.include_files, config.exclude_files)
+        copy_matching_files(
+            repo_dir, plugin_output_dir, config.include_files, config.exclude_files
+        )
 
         # Apply transformations
         print("  [bold yellow]Applying transformations[/]...")
@@ -966,7 +1000,9 @@ def main():
         plugin_names = sys.argv[1:]
         for name in plugin_names:
             if name not in PLUGINS:
-                print(f"Error: Unknown plugin '{name}'. Available: {', '.join(PLUGINS.keys())}")
+                print(
+                    f"Error: Unknown plugin '{name}'. Available: {', '.join(PLUGINS.keys())}"
+                )
                 sys.exit(1)
     else:
         plugin_names = list(PLUGINS.keys())

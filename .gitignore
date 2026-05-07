@@ -157,3 +157,4 @@ __pycache__/
 *.nam
 *.til
 .sprites/.sprite
+uv.lock

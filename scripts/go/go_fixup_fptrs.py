@@ -2,11 +2,12 @@
 when IDA's auto-discovery of functions in 64-bit Windows Go executables fails,
 scan for global (.rdata) pointers into the code section (.text) and assume these are function pointers.
 """
-import idc
-import ida_name
+
 import ida_auto
 import ida_bytes
+import ida_name
 import idautils
+import idc
 
 
 def enum_segments():
@@ -17,7 +18,7 @@ def enum_segments():
 
 
 def find_pointers(start, end):
-    for va in range(start, end-0x8):
+    for va in range(start, end - 0x8):
         ptr = ida_bytes.get_qword(va)
         if idc.get_segm_start(ptr) != idc.BADADDR:
             yield va, ptr, 8
@@ -52,7 +53,7 @@ def is_unknown(va):
 
 def main():
     for segstart, segend, segname in enum_segments():
-        if segname not in ('.rdata', 'UPX1'):
+        if segname not in (".rdata", "UPX1"):
             continue
 
         print(segname)
@@ -69,10 +70,13 @@ def main():
             ida_auto.auto_make_proc(dst)
 
             ida_bytes.del_items(src, size)
-            ida_bytes.create_data(src, idc.FF_QWORD if size == 8 else idc.FF_DWORD, size, idc.BADADDR)
+            ida_bytes.create_data(
+                src, idc.FF_QWORD if size == 8 else idc.FF_DWORD, size, idc.BADADDR
+            )
             # this doesn't seem to always work :-(
             idc.op_plain_offset(src, -1, 0)
             ida_name.set_name(src, "j_%s_%x" % (src, dst))
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()

@@ -1,9 +1,9 @@
 import ctypes
 
-import idaapi
-import ida_ua
-import ida_lines
 import ida_idaapi
+import ida_lines
+import ida_ua
+import idaapi
 
 
 class ColorHooks(idaapi.IDP_Hooks):
@@ -40,7 +40,7 @@ class ColorHooks(idaapi.IDP_Hooks):
     def ev_out_mnem(self, ctx) -> int:
         """
         Generate instruction mnemonics.
-        This callback should append the colored mnemonics to ctx.outbuf 
+        This callback should append the colored mnemonics to ctx.outbuf
         Optional notification, if absent, out_mnem will be called.
 
         args:

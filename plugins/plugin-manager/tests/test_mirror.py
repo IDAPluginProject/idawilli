@@ -1,9 +1,8 @@
 import tempfile
-from typing import Any
 from pathlib import Path
+from typing import Any
 
 import pytest
-
 from idapro_plugin_manager import mirror
 
 
@@ -32,7 +31,9 @@ def test_get_dependencies_empty():
 
 def test_get_dependencies_with_extras():
     """Test that only base dependencies are included, not extras."""
-    package_info = {"info": {"requires_dist": ["dependency1>=1.0", "optional-dep; extra == 'dev'"]}}
+    package_info = {
+        "info": {"requires_dist": ["dependency1>=1.0", "optional-dep; extra == 'dev'"]}
+    }
     deps = mirror.get_dependencies(package_info)
     assert "dependency1" in deps
     assert "optional-dep" not in deps
@@ -77,7 +78,10 @@ def test_get_latest_version_files_multiple_versions():
 
 def test_create_package_index_basic(temp_repo_dir):
     """Test creating a package index page."""
-    files_info = [{"filename": "test-1.0.0.whl", "hash": "abc123"}, {"filename": "test-1.0.0.tar.gz", "hash": "def456"}]
+    files_info = [
+        {"filename": "test-1.0.0.whl", "hash": "abc123"},
+        {"filename": "test-1.0.0.tar.gz", "hash": "def456"},
+    ]
 
     mirror.create_package_index(temp_repo_dir, "test-package", files_info)
 
@@ -144,7 +148,9 @@ def test_mirror_real_package(temp_repo_dir):
     assert len(all_files) >= 2, f"Expected at least 2 files, found: {len(all_files)}"
 
     main_pkg_files = [f for f in all_files if "idapro_plugin_manager" in f.name]
-    assert len(main_pkg_files) >= 1, f"Expected main package files, found: {main_pkg_files}"
+    assert len(main_pkg_files) >= 1, (
+        f"Expected main package files, found: {main_pkg_files}"
+    )
 
 
 def test_mirror_multiple_packages(temp_repo_dir):
@@ -166,4 +172,6 @@ def test_mirror_multiple_packages(temp_repo_dir):
     ida_files = [f for f in all_files if "idapro_plugin_manager" in f.name]
     packaging_files = [f for f in all_files if "packaging" in f.name]
     assert len(ida_files) >= 1, f"Expected IDA package files, found: {ida_files}"
-    assert len(packaging_files) >= 1, f"Expected packaging files, found: {packaging_files}"
+    assert len(packaging_files) >= 1, (
+        f"Expected packaging files, found: {packaging_files}"
+    )

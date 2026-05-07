@@ -1,19 +1,19 @@
 from __future__ import annotations
 
+import hashlib
+import html
 import os
 import re
-import html
 import shutil
-import hashlib
 import tempfile
 import urllib.parse
-from typing import Any
 from pathlib import Path
+from typing import Any
 
-import requests
-import packaging.version
 import packaging.requirements
-from rich.progress import TaskID, Progress
+import packaging.version
+import requests
+from rich.progress import Progress, TaskID
 
 
 def normalize_name(name: str) -> str:
@@ -42,7 +42,13 @@ def get_dependencies(package_info: dict[str, Any]) -> set[str]:
     return dependencies
 
 
-def download_file(session: requests.Session, url: str, dest_path: Path, progress: Progress, task_id: TaskID) -> str:
+def download_file(
+    session: requests.Session,
+    url: str,
+    dest_path: Path,
+    progress: Progress,
+    task_id: TaskID,
+) -> str:
     """Download a file and return its SHA256 hash."""
     dest_path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -90,7 +96,9 @@ def get_latest_version_files(package_info: dict[str, Any]) -> list[dict[str, Any
     return releases.get(latest_version, [])
 
 
-def create_package_index(repo_dir: Path, package_name: str, files_info: list[dict[str, str]]) -> None:
+def create_package_index(
+    repo_dir: Path, package_name: str, files_info: list[dict[str, str]]
+) -> None:
     """Create PEP 503 compliant package index page."""
     normalized_name = normalize_name(package_name)
     package_dir = repo_dir / normalized_name
@@ -134,7 +142,11 @@ def create_root_index(repo_dir: Path, package_names: list[str]) -> None:
 
 
 def mirror_package(
-    session: requests.Session, repo_dir: Path, package_name: str, progress: Progress, processed_packages: set[str]
+    session: requests.Session,
+    repo_dir: Path,
+    package_name: str,
+    progress: Progress,
+    processed_packages: set[str],
 ) -> None:
     """Mirror a single package and its dependencies."""
     if package_name in processed_packages:
@@ -144,7 +156,9 @@ def mirror_package(
         package_info = get_package_info(session, package_name)
     except requests.exceptions.HTTPError as e:
         if e.response.status_code == 404:
-            progress.console.print(f"[yellow]Package '{package_name}' not found on PyPI[/]")
+            progress.console.print(
+                f"[yellow]Package '{package_name}' not found on PyPI[/]"
+            )
         else:
             raise e
 
@@ -203,11 +217,15 @@ def mirror_packages(repo_dir: Path, package_names: list[str]) -> None:
 
     with Progress() as progress:
         for package_name in package_names:
-            mirror_package(session, repo_dir, package_name, progress, processed_packages)
+            mirror_package(
+                session, repo_dir, package_name, progress, processed_packages
+            )
 
         create_root_index(repo_dir, list(processed_packages))
 
-        progress.console.print(f"\n[green]Successfully mirrored {len(processed_packages)} packages to {repo_dir}[/]")
+        progress.console.print(
+            f"\n[green]Successfully mirrored {len(processed_packages)} packages to {repo_dir}[/]"
+        )
         progress.console.print(
             f"Repository is PEP 503 compliant and can be used with: pip install -i file://{repo_dir} <package>"
         )

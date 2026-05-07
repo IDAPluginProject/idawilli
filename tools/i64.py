@@ -42,8 +42,14 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Create an IDA .i64 database from a binary file.",
     )
-    parser.add_argument("file", type=Path, help="path to binary file (exe, dll, so, etc.)")
-    parser.add_argument("--thorough", action="store_true", help="decompile all functions to cache pseudocode")
+    parser.add_argument(
+        "file", type=Path, help="path to binary file (exe, dll, so, etc.)"
+    )
+    parser.add_argument(
+        "--thorough",
+        action="store_true",
+        help="decompile all functions to cache pseudocode",
+    )
     parser.add_argument("--verbose", action="store_true", help="enable debug logging")
     parser.add_argument("--quiet", action="store_true", help="suppress status output")
     return parser
@@ -65,7 +71,9 @@ def decompile_all() -> None:
     ida_hexrays.decompile_many(
         tmp_path,
         None,
-        ida_hexrays.VDRUN_NEWFILE | ida_hexrays.VDRUN_SILENT | ida_hexrays.VDRUN_MAYSTOP,
+        ida_hexrays.VDRUN_NEWFILE
+        | ida_hexrays.VDRUN_SILENT
+        | ida_hexrays.VDRUN_MAYSTOP,
     )
 
     tmp_file = Path(tmp_path)
@@ -91,7 +99,11 @@ def create_database(input_path: Path, thorough: bool, quiet: bool) -> Path:
 
     output_path = input_path.parent / (input_path.name + ".i64")
 
-    ctx = stderr_console.status(f"Analyzing {input_path.name}...", spinner="dots") if not quiet else nullcontext()
+    ctx = (
+        stderr_console.status(f"Analyzing {input_path.name}...", spinner="dots")
+        if not quiet
+        else nullcontext()
+    )
     with ctx as status:
         with Database.open(str(input_path), options, save_on_close=True) as db:
             logger.debug("database opened: %s", input_path)
@@ -100,7 +112,9 @@ def create_database(input_path: Path, thorough: bool, quiet: bool) -> Path:
 
             if thorough:
                 if status is not None:
-                    status.update("Decompiling all functions...", spinner="bouncingBall")
+                    status.update(
+                        "Decompiling all functions...", spinner="bouncingBall"
+                    )
                 decompile_all()
 
     return output_path
@@ -120,7 +134,9 @@ def main() -> int:
     output_path = input_path.parent / (input_path.name + ".i64")
 
     if output_path.exists():
-        stdout_console.print(f"[red]error:[/red] database already exists: {output_path}")
+        stdout_console.print(
+            f"[red]error:[/red] database already exists: {output_path}"
+        )
         return 1
 
     start_time = perf_counter()

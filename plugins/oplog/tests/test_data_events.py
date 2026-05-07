@@ -2,17 +2,16 @@ import textwrap
 from pathlib import Path
 
 from conftest import run_ida_script
-
 from oplog_events import (
-    OpModel,
     EventList,
     InsnModel,
+    OpModel,
+    byte_patched_event,
+    changing_op_type_event,
+    destroyed_items_event,
     make_code_event,
     make_data_event,
-    byte_patched_event,
-    destroyed_items_event,
     op_type_changed_event,
-    changing_op_type_event,
 )
 
 
@@ -364,7 +363,9 @@ def test_byte_patched(test_binary: Path, session_idauser: Path, work_dir: Path):
     assert actual == expected
 
 
-def test_byte_patched_multiple(test_binary: Path, session_idauser: Path, work_dir: Path):
+def test_byte_patched_multiple(
+    test_binary: Path, session_idauser: Path, work_dir: Path
+):
     """Test that patching multiple bytes triggers multiple byte_patched events."""
     events_path = work_dir / "events.json"
 
@@ -474,7 +475,9 @@ def test_destroyed_items(test_binary: Path, session_idauser: Path, work_dir: Pat
     )
 
     event_list = EventList.model_validate_json(events_path.read_text())
-    destroyed_events = [e for e in event_list.root if isinstance(e, destroyed_items_event)]
+    destroyed_events = [
+        e for e in event_list.root if isinstance(e, destroyed_items_event)
+    ]
 
     assert len(destroyed_events) >= 1, "No destroyed_items event found"
 
@@ -490,7 +493,9 @@ def test_destroyed_items(test_binary: Path, session_idauser: Path, work_dir: Pat
     assert actual == expected
 
 
-def test_destroyed_items_via_segm_start(test_binary: Path, session_idauser: Path, work_dir: Path):
+def test_destroyed_items_via_segm_start(
+    test_binary: Path, session_idauser: Path, work_dir: Path
+):
     """Test destroying items by moving segment start forward."""
     events_path = work_dir / "events.json"
 
@@ -513,7 +518,9 @@ def test_destroyed_items_via_segm_start(test_binary: Path, session_idauser: Path
     )
 
     event_list = EventList.model_validate_json(events_path.read_text())
-    destroyed_events = [e for e in event_list.root if isinstance(e, destroyed_items_event)]
+    destroyed_events = [
+        e for e in event_list.root if isinstance(e, destroyed_items_event)
+    ]
 
     assert len(destroyed_events) >= 1, "No destroyed_items event found"
 
@@ -548,8 +555,12 @@ def test_op_type_changed_hex(test_binary: Path, session_idauser: Path, work_dir:
     )
 
     event_list = EventList.model_validate_json(events_path.read_text())
-    changing_events = [e for e in event_list.root if isinstance(e, changing_op_type_event)]
-    changed_events = [e for e in event_list.root if isinstance(e, op_type_changed_event)]
+    changing_events = [
+        e for e in event_list.root if isinstance(e, changing_op_type_event)
+    ]
+    changed_events = [
+        e for e in event_list.root if isinstance(e, op_type_changed_event)
+    ]
 
     assert len(changing_events) >= 1
     assert len(changed_events) >= 1
@@ -574,7 +585,9 @@ def test_op_type_changed_hex(test_binary: Path, session_idauser: Path, work_dir:
     assert changed_actual == changed_expected
 
 
-def test_op_type_changed_decimal(test_binary: Path, session_idauser: Path, work_dir: Path):
+def test_op_type_changed_decimal(
+    test_binary: Path, session_idauser: Path, work_dir: Path
+):
     """Test that changing operand type to decimal triggers op_type events."""
     events_path = work_dir / "events.json"
 
@@ -593,8 +606,12 @@ def test_op_type_changed_decimal(test_binary: Path, session_idauser: Path, work_
     )
 
     event_list = EventList.model_validate_json(events_path.read_text())
-    changing_events = [e for e in event_list.root if isinstance(e, changing_op_type_event)]
-    changed_events = [e for e in event_list.root if isinstance(e, op_type_changed_event)]
+    changing_events = [
+        e for e in event_list.root if isinstance(e, changing_op_type_event)
+    ]
+    changed_events = [
+        e for e in event_list.root if isinstance(e, op_type_changed_event)
+    ]
 
     assert len(changing_events) >= 1
     assert len(changed_events) >= 1
@@ -619,7 +636,9 @@ def test_op_type_changed_decimal(test_binary: Path, session_idauser: Path, work_
     assert changed_actual == changed_expected
 
 
-def test_op_type_changed_binary(test_binary: Path, session_idauser: Path, work_dir: Path):
+def test_op_type_changed_binary(
+    test_binary: Path, session_idauser: Path, work_dir: Path
+):
     """Test that changing operand type to binary triggers op_type events."""
     events_path = work_dir / "events.json"
 
@@ -638,8 +657,12 @@ def test_op_type_changed_binary(test_binary: Path, session_idauser: Path, work_d
     )
 
     event_list = EventList.model_validate_json(events_path.read_text())
-    changing_events = [e for e in event_list.root if isinstance(e, changing_op_type_event)]
-    changed_events = [e for e in event_list.root if isinstance(e, op_type_changed_event)]
+    changing_events = [
+        e for e in event_list.root if isinstance(e, changing_op_type_event)
+    ]
+    changed_events = [
+        e for e in event_list.root if isinstance(e, op_type_changed_event)
+    ]
 
     assert len(changing_events) >= 1
     assert len(changed_events) >= 1
@@ -664,7 +687,9 @@ def test_op_type_changed_binary(test_binary: Path, session_idauser: Path, work_d
     assert changed_actual == changed_expected
 
 
-def test_op_type_changed_offset(test_binary: Path, session_idauser: Path, work_dir: Path):
+def test_op_type_changed_offset(
+    test_binary: Path, session_idauser: Path, work_dir: Path
+):
     """Test that changing operand to offset captures refinfo details in op_type_changed."""
     events_path = work_dir / "events.json"
 
@@ -684,7 +709,9 @@ def test_op_type_changed_offset(test_binary: Path, session_idauser: Path, work_d
     )
 
     event_list = EventList.model_validate_json(events_path.read_text())
-    changed_events = [e for e in event_list.root if isinstance(e, op_type_changed_event)]
+    changed_events = [
+        e for e in event_list.root if isinstance(e, op_type_changed_event)
+    ]
 
     assert len(changed_events) >= 1
 

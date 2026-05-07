@@ -14,8 +14,8 @@ Example:
     python verify_idalib.py /bin/ls
 """
 
-import sys
 import argparse
+import sys
 
 
 def main():

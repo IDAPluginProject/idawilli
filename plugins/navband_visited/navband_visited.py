@@ -1,9 +1,8 @@
 import logging
 
-import idaapi
 import ida_bytes
 import ida_kernwin
-
+import idaapi
 
 logger = logging.getLogger(__name__)
 

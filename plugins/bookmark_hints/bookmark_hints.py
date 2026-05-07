@@ -6,13 +6,13 @@ description:
   for which there is a bookmark. The hover hint shows the
   description of the mark, like "mark: what is this?". As
   bookmarks are added and removed, the icons are updated.
-  
+
   We use the following concepts:
     * ida_moves.bookmarks_t: to fetch the marked locations for `IDA View-A`.
     * ida_idp.IDB_Hooks.bookmark_changed: to notify on bookmark add/remove/change.
     * ida_lines.user_defined_prefix_t: to add a line prefix containing an icon character.
     * ida_kernwin.UI_Hooks.get_custom_viewer_hint: to recognize the icon and show a popup hint.
-  
+
   Ultimately, the functionality is a bit contrived, because the
   disassembly listing already highlights marked locations
   (see: https://hex-rays.com/blog/igors-tip-of-the-week-80-bookmarks).
@@ -24,11 +24,11 @@ keywords: bookmarks, hooks, line prefix, hints
 level: intermediate
 """
 
+import ida_idaapi
 import ida_idp
+import ida_kernwin
 import ida_lines
 import ida_moves
-import ida_idaapi
-import ida_kernwin
 
 
 def refresh_disassembly():

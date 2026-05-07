@@ -1,5 +1,5 @@
-import ida_nalt
 import ida_kernwin
+import ida_nalt
 
 
 def main():

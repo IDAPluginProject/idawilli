@@ -6,22 +6,22 @@
 #     "ida-domain>=0.3.5",
 # ]
 # ///
-import sys
-import logging
 import argparse
 import contextlib
+import logging
+import sys
 from pathlib import Path
 
-import rich.padding
-from rich.text import Text
-from rich.theme import Theme
-from rich.markup import escape
-from rich.console import Console
-from ida_domain import Database
-import ida_segment
-import ida_nalt
 import ida_funcs
 import ida_gdl
+import ida_nalt
+import ida_segment
+import rich.padding
+from ida_domain import Database
+from rich.console import Console
+from rich.markup import escape
+from rich.text import Text
+from rich.theme import Theme
 
 logger = logging.getLogger("codemap")
 
@@ -41,12 +41,16 @@ class Renderer:
 
     @staticmethod
     def markup(s: str, **kwargs) -> Text:
-        escaped_args = {k: (escape(v) if isinstance(v, str) else v) for k, v in kwargs.items()}
+        escaped_args = {
+            k: (escape(v) if isinstance(v, str) else v) for k, v in kwargs.items()
+        }
         return Text.from_markup(s.format(**escaped_args))
 
     def print(self, renderable, **kwargs):
         if not kwargs:
-            return self.console.print(rich.padding.Padding(renderable, (0, 0, 0, self.indent * 2)))
+            return self.console.print(
+                rich.padding.Padding(renderable, (0, 0, 0, self.indent * 2))
+            )
         assert isinstance(renderable, str)
         return self.print(self.markup(renderable, **kwargs))
 
@@ -104,8 +108,12 @@ def main(argv: list[str] | None = None):
 
     parser = argparse.ArgumentParser(description="Inspect binaries using IDA Pro")
     parser.add_argument("input_file", type=Path, help="path to input file")
-    parser.add_argument("-d", "--debug", action="store_true", help="enable debugging output on STDERR")
-    parser.add_argument("-q", "--quiet", action="store_true", help="disable all output but errors")
+    parser.add_argument(
+        "-d", "--debug", action="store_true", help="enable debugging output on STDERR"
+    )
+    parser.add_argument(
+        "-q", "--quiet", action="store_true", help="disable all output but errors"
+    )
     args = parser.parse_args(args=argv)
 
     logging.basicConfig()
@@ -204,7 +212,9 @@ def main(argv: list[str] | None = None):
                             continue
                         delta = caller_order_idx - func_order_idx
                         direction = "↑" if delta < 0 else "↓"
-                        caller_name = caller.name if caller.name else f"sub_{caller.start_ea:x}"
+                        caller_name = (
+                            caller.name if caller.name else f"sub_{caller.start_ea:x}"
+                        )
                         o.print(
                             "xref:    [decoration]{direction}[/] {name} [decoration]({delta:+})[/]",
                             direction=direction,
@@ -224,7 +234,11 @@ def main(argv: list[str] | None = None):
                             num_instructions += 1
                             total_bytes += insn.size
                     except Exception:
-                        logger.debug("failed to analyze flowchart for 0x%x", func.start_ea, exc_info=True)
+                        logger.debug(
+                            "failed to analyze flowchart for 0x%x",
+                            func.start_ea,
+                            exc_info=True,
+                        )
                         num_basic_blocks = 0
                         num_edges = 0
                         num_instructions = 0
@@ -250,7 +264,9 @@ def main(argv: list[str] | None = None):
                         callee_order_idx = func_order.get(callee.start_ea)
                         delta = callee_order_idx - func_order_idx
                         direction = "↑" if delta < 0 else "↓"
-                        callee_name = callee.name if callee.name else f"sub_{callee.start_ea:x}"
+                        callee_name = (
+                            callee.name if callee.name else f"sub_{callee.start_ea:x}"
+                        )
 
                         o.print(
                             "calls:   [decoration]{direction}[/] {name} [decoration]({delta:+})[/]",
@@ -288,14 +304,20 @@ def main(argv: list[str] | None = None):
                                     seen_strings.add(xref.to_ea)
                                     content = string_info.contents
                                     if isinstance(content, bytes):
-                                        content = content.decode("utf-8", errors="replace")
+                                        content = content.decode(
+                                            "utf-8", errors="replace"
+                                        )
                                     content = content.rstrip()
                                     o.print(
                                         'string:   [decoration]"[/]{string}[decoration]"[/]',
                                         string=content,
                                     )
                             except Exception:
-                                logger.debug("failed to get string at 0x%x", xref.to_ea, exc_info=True)
+                                logger.debug(
+                                    "failed to get string at 0x%x",
+                                    xref.to_ea,
+                                    exc_info=True,
+                                )
 
                     o.print("")
 

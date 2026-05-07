@@ -3,26 +3,25 @@ from pathlib import Path
 
 import pytest
 from conftest import run_ida_script
-
 from oplog_events import (
     EventList,
     SegmentModel,
     SegmMoveInfoModel,
-    segm_added_event,
-    segm_moved_event,
     adding_segm_event,
-    sgr_changed_event,
-    sgr_deleted_event,
-    segm_deleted_event,
     allsegs_moved_event,
-    deleting_segm_event,
-    segm_end_changed_event,
     changing_segm_end_event,
-    segm_name_changed_event,
+    changing_segm_start_event,
+    deleting_segm_event,
+    segm_added_event,
     segm_attrs_updated_event,
     segm_class_changed_event,
+    segm_deleted_event,
+    segm_end_changed_event,
+    segm_moved_event,
+    segm_name_changed_event,
     segm_start_changed_event,
-    changing_segm_start_event,
+    sgr_changed_event,
+    sgr_deleted_event,
 )
 
 
@@ -45,7 +44,9 @@ def test_segm_name_changed(test_binary: Path, session_idauser: Path, work_dir: P
     )
 
     event_list = EventList.model_validate_json(events_path.read_text())
-    name_changed = [e for e in event_list.root if isinstance(e, segm_name_changed_event)]
+    name_changed = [
+        e for e in event_list.root if isinstance(e, segm_name_changed_event)
+    ]
     assert len(name_changed) >= 1
 
     actual = name_changed[-1]
@@ -66,7 +67,24 @@ def test_segm_name_changed(test_binary: Path, session_idauser: Path, work_dir: P
             bitness=1,
             flags=16,
             sel=1,
-            defsr=[0, 0, 0, 3, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            defsr=[
+                0,
+                0,
+                0,
+                3,
+                0xFFFFFFFFFFFFFFFF,
+                0xFFFFFFFFFFFFFFFF,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+            ],
             type=2,
             color=0xFFFFFFFF,
             segment_name="renamed_seg",
@@ -95,7 +113,9 @@ def test_segm_class_changed(test_binary: Path, session_idauser: Path, work_dir: 
     )
 
     event_list = EventList.model_validate_json(events_path.read_text())
-    class_changed = [e for e in event_list.root if isinstance(e, segm_class_changed_event)]
+    class_changed = [
+        e for e in event_list.root if isinstance(e, segm_class_changed_event)
+    ]
     assert len(class_changed) >= 1
 
     actual = class_changed[-1]
@@ -116,7 +136,24 @@ def test_segm_class_changed(test_binary: Path, session_idauser: Path, work_dir: 
             bitness=1,
             flags=16,
             sel=1,
-            defsr=[0, 0, 0, 3, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            defsr=[
+                0,
+                0,
+                0,
+                3,
+                0xFFFFFFFFFFFFFFFF,
+                0xFFFFFFFFFFFFFFFF,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+            ],
             type=2,
             color=0xFFFFFFFF,
             segment_name=".text",
@@ -145,7 +182,9 @@ def test_segm_attrs_updated(test_binary: Path, session_idauser: Path, work_dir: 
     )
 
     event_list = EventList.model_validate_json(events_path.read_text())
-    attrs_updated = [e for e in event_list.root if isinstance(e, segm_attrs_updated_event)]
+    attrs_updated = [
+        e for e in event_list.root if isinstance(e, segm_attrs_updated_event)
+    ]
     assert len(attrs_updated) >= 1
 
     actual = attrs_updated[-1]
@@ -165,7 +204,24 @@ def test_segm_attrs_updated(test_binary: Path, session_idauser: Path, work_dir: 
             bitness=1,
             flags=16,
             sel=1,
-            defsr=[0, 0, 0, 3, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            defsr=[
+                0,
+                0,
+                0,
+                3,
+                0xFFFFFFFFFFFFFFFF,
+                0xFFFFFFFFFFFFFFFF,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+            ],
             type=2,
             color=0xFFFFFFFF,
             segment_name=".text",
@@ -252,7 +308,9 @@ def test_segm_added(test_binary: Path, session_idauser: Path, work_dir: Path):
     )
     assert actual_adding == expected_adding
 
-    matching_added = [e for e in segm_added_events if e.s.segment_name == "TEST_NEW_SEG"]
+    matching_added = [
+        e for e in segm_added_events if e.s.segment_name == "TEST_NEW_SEG"
+    ]
     assert len(matching_added) >= 1
 
     actual_added = matching_added[-1]
@@ -388,8 +446,12 @@ def test_segm_start_changed(test_binary: Path, session_idauser: Path, work_dir: 
 
     event_list = EventList.model_validate_json(events_path.read_text())
 
-    changing_events = [e for e in event_list.root if isinstance(e, changing_segm_start_event)]
-    changed_events = [e for e in event_list.root if isinstance(e, segm_start_changed_event)]
+    changing_events = [
+        e for e in event_list.root if isinstance(e, changing_segm_start_event)
+    ]
+    changed_events = [
+        e for e in event_list.root if isinstance(e, segm_start_changed_event)
+    ]
     assert len(changing_events) >= 1
     assert len(changed_events) >= 1
 
@@ -518,8 +580,12 @@ def test_segm_end_changed(test_binary: Path, session_idauser: Path, work_dir: Pa
 
     event_list = EventList.model_validate_json(events_path.read_text())
 
-    changing_events = [e for e in event_list.root if isinstance(e, changing_segm_end_event)]
-    changed_events = [e for e in event_list.root if isinstance(e, segm_end_changed_event)]
+    changing_events = [
+        e for e in event_list.root if isinstance(e, changing_segm_end_event)
+    ]
+    changed_events = [
+        e for e in event_list.root if isinstance(e, segm_end_changed_event)
+    ]
     assert len(changing_events) >= 1
     assert len(changed_events) >= 1
 

@@ -3,7 +3,6 @@
 from typing import get_type_hints
 
 import pytest
-
 from ida_codemode_api import (
     FUNCTION_NAMES,
     TYPE_STUBS,

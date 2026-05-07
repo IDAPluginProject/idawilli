@@ -1,0 +1,102 @@
+[project]
+name = "idawilli"
+version = "0.1.0"
+description = "IDA Pro resources, scripts, and configurations."
+license = "Apache-2.0"
+requires-python = ">=3.10"
+authors = [
+    { name = "Willi Ballenthin", email = "wballenthin@hex-rays.com" },
+]
+dependencies = []
+
+[dependency-groups]
+dev = [
+    "mypy>=1.0",
+    "pytest>=8.0",
+    "ruff>=0.15",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["idawilli"]
+
+[tool.pytest.ini_options]
+addopts = "--import-mode=importlib"
+testpaths = ["tests"]
+
+[tool.mypy]
+check_untyped_defs = true
+explicit_package_bases = true
+disable_error_code = ["import-untyped"]
+
+[[tool.mypy.overrides]]
+module = [
+    "conftest",
+    "global_struct_dissector",
+    "ida_auto",
+    "ida_bytes",
+    "ida_dbg",
+    "ida_dirtree",
+    "ida_diskio",
+    "ida_domain",
+    "ida_domain.*",
+    "ida_entry",
+    "ida_expr",
+    "ida_frame",
+    "ida_funcs",
+    "ida_gdl",
+    "ida_hexrays",
+    "ida_ida",
+    "ida_idaapi",
+    "ida_idd",
+    "ida_idp",
+    "ida_kernwin",
+    "ida_lines",
+    "ida_loader",
+    "ida_moves",
+    "ida_nalt",
+    "ida_name",
+    "ida_netnode",
+    "ida_offset",
+    "ida_range",
+    "ida_registry",
+    "ida_segment",
+    "ida_settings",
+    "ida_typeinf",
+    "ida_ua",
+    "ida_xref",
+    "idaapi",
+    "idapro",
+    "idautils",
+    "idc",
+    "oplog",
+    "oplog_events",
+    "oplog_hooks",
+    "oplog_render",
+    "oplog_ui",
+    "pydantic",
+    "pydantic.*",
+    "qtpy",
+    "rich",
+    "rich.*",
+    "yara",
+]
+ignore_missing_imports = true
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]
+ignore = [
+    "E402",
+    "E501",
+    "E711",
+    "E722",
+    "E741",
+    "F401",
+    "F403",
+    "F405",
+    "F821",
+    "F841",
+]

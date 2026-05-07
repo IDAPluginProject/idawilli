@@ -3,19 +3,18 @@ from pathlib import Path
 
 import pytest
 from conftest import run_ida_script
-
 from oplog_events import (
     EventList,
-    renamed_event,
+    bookmark_changed_event,
     dirtree_link_event,
+    dirtree_mkdir_event,
     dirtree_move_event,
     dirtree_rank_event,
-    dirtree_mkdir_event,
     dirtree_rmdir_event,
     dirtree_rminode_event,
-    bookmark_changed_event,
     dirtree_segm_moved_event,
     item_color_changed_event,
+    renamed_event,
 )
 
 
@@ -51,7 +50,9 @@ def test_bookmark_changed(test_binary: Path, session_idauser: Path, work_dir: Pa
     )
 
     event_list = EventList.model_validate_json(events_path.read_text())
-    bookmark_events = [e for e in event_list.root if isinstance(e, bookmark_changed_event)]
+    bookmark_events = [
+        e for e in event_list.root if isinstance(e, bookmark_changed_event)
+    ]
 
     assert len(bookmark_events) >= 1
 
@@ -67,8 +68,12 @@ def test_bookmark_changed(test_binary: Path, session_idauser: Path, work_dir: Pa
     assert actual == expected
 
 
-@pytest.mark.xfail(reason="bookmarks_t_erase requires GUI typed_bookmarks_t context, unavailable in headless mode")
-def test_bookmark_changed_delete(test_binary: Path, session_idauser: Path, work_dir: Path):
+@pytest.mark.xfail(
+    reason="bookmarks_t_erase requires GUI typed_bookmarks_t context, unavailable in headless mode"
+)
+def test_bookmark_changed_delete(
+    test_binary: Path, session_idauser: Path, work_dir: Path
+):
     """Test that deleting a bookmark triggers bookmark_changed event.
 
     Note: This test is xfail because bookmark deletion requires a typed_bookmarks_t
@@ -107,7 +112,9 @@ def test_bookmark_changed_delete(test_binary: Path, session_idauser: Path, work_
     )
 
     event_list = EventList.model_validate_json(events_path.read_text())
-    bookmark_events = [e for e in event_list.root if isinstance(e, bookmark_changed_event)]
+    bookmark_events = [
+        e for e in event_list.root if isinstance(e, bookmark_changed_event)
+    ]
 
     assert len(bookmark_events) >= 2
 
@@ -142,7 +149,9 @@ def test_item_color_changed(test_binary: Path, session_idauser: Path, work_dir: 
     )
 
     event_list = EventList.model_validate_json(events_path.read_text())
-    color_events = [e for e in event_list.root if isinstance(e, item_color_changed_event)]
+    color_events = [
+        e for e in event_list.root if isinstance(e, item_color_changed_event)
+    ]
 
     matching = [e for e in color_events if e.ea == 0x401000]
     assert len(matching) >= 1
@@ -178,7 +187,9 @@ def test_item_color_reset(test_binary: Path, session_idauser: Path, work_dir: Pa
     )
 
     event_list = EventList.model_validate_json(events_path.read_text())
-    color_events = [e for e in event_list.root if isinstance(e, item_color_changed_event)]
+    color_events = [
+        e for e in event_list.root if isinstance(e, item_color_changed_event)
+    ]
 
     matching = [e for e in color_events if e.ea == 0x401000]
     assert len(matching) >= 2
@@ -391,7 +402,9 @@ def test_dirtree_rminode(test_binary: Path, session_idauser: Path, work_dir: Pat
     )
 
     event_list = EventList.model_validate_json(events_path.read_text())
-    rminode_events = [e for e in event_list.root if isinstance(e, dirtree_rminode_event)]
+    rminode_events = [
+        e for e in event_list.root if isinstance(e, dirtree_rminode_event)
+    ]
 
     assert len(rminode_events) >= 1
 
@@ -423,7 +436,9 @@ def test_dirtree_segm_moved(test_binary: Path, session_idauser: Path, work_dir: 
     )
 
     event_list = EventList.model_validate_json(events_path.read_text())
-    segm_moved_events = [e for e in event_list.root if isinstance(e, dirtree_segm_moved_event)]
+    segm_moved_events = [
+        e for e in event_list.root if isinstance(e, dirtree_segm_moved_event)
+    ]
 
     assert len(segm_moved_events) >= 1
 

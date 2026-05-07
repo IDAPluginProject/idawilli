@@ -2,15 +2,14 @@ import textwrap
 from pathlib import Path
 
 from conftest import run_ida_script
-
 from oplog_events import (
     EventList,
     RangeModel,
-    cmt_changed_event,
     changing_cmt_event,
+    changing_range_cmt_event,
+    cmt_changed_event,
     extra_cmt_changed_event,
     range_cmt_changed_event,
-    changing_range_cmt_event,
 )
 
 
@@ -81,8 +80,12 @@ def test_range_cmt_changed(test_binary: Path, session_idauser: Path, work_dir: P
     )
 
     event_list = EventList.model_validate_json(events_path.read_text())
-    changing_events = [e for e in event_list.root if isinstance(e, changing_range_cmt_event)]
-    changed_events = [e for e in event_list.root if isinstance(e, range_cmt_changed_event)]
+    changing_events = [
+        e for e in event_list.root if isinstance(e, changing_range_cmt_event)
+    ]
+    changed_events = [
+        e for e in event_list.root if isinstance(e, range_cmt_changed_event)
+    ]
 
     assert len(changing_events) >= 1
     assert len(changed_events) >= 1
@@ -131,7 +134,9 @@ def test_extra_cmt_changed(test_binary: Path, session_idauser: Path, work_dir: P
     )
 
     event_list = EventList.model_validate_json(events_path.read_text())
-    extra_cmt_events = [e for e in event_list.root if isinstance(e, extra_cmt_changed_event)]
+    extra_cmt_events = [
+        e for e in event_list.root if isinstance(e, extra_cmt_changed_event)
+    ]
 
     assert len(extra_cmt_events) >= 1
 

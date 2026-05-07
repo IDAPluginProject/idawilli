@@ -6,10 +6,11 @@ expect to see the pattern:
     .rdata: qword ptr string -> .rdata
     .rdata: qword size
 """
-import idc
-import ida_name
+
 import ida_bytes
+import ida_name
 import idautils
+import idc
 
 
 def enum_segments():
@@ -20,7 +21,7 @@ def enum_segments():
 
 
 def find_pointers(start, end):
-    for va in range(start, end-0x8):
+    for va in range(start, end - 0x8):
         ptr = ida_bytes.get_qword(va)
         if idc.get_segm_start(ptr) != idc.BADADDR:
             yield va, ptr, 8
@@ -55,18 +56,18 @@ def is_unknown(va):
 
 def main():
     for segstart, segend, segname in enum_segments():
-        if segname not in ('.rdata', 'UPX1' ):
+        if segname not in (".rdata", "UPX1"):
             continue
 
         for src, dst, psize in find_pointers(segstart, segend):
             if idc.get_segm_name(dst) not in (".rdata", "UPX0"):
                 continue
-                
+
             if psize == 8:
                 size = ida_bytes.get_qword(src + 0x8)
             else:
                 size = ida_bytes.get_dword(src + 0x4)
-                
+
             if size > 0x100:
                 continue
             if size <= 2:
@@ -91,7 +92,9 @@ def main():
 
             # pointer
             ida_bytes.del_items(src, psize)
-            ida_bytes.create_data(src, idc.FF_QWORD if size == 8 else idc.FF_DWORD, psize, idc.BADADDR)
+            ida_bytes.create_data(
+                src, idc.FF_QWORD if size == 8 else idc.FF_DWORD, psize, idc.BADADDR
+            )
             # this doesn't seem to always work :-(
             idc.op_plain_offset(src, -1, 0)
             ida_name.set_name(src, "s_%x" % (src))
@@ -99,7 +102,13 @@ def main():
 
             # size
             ida_bytes.del_items(src + psize, psize)
-            ida_bytes.create_data(src + psize, idc.FF_QWORD if size == 8 else idc.FF_DWORD, psize, idc.BADADDR)
+            ida_bytes.create_data(
+                src + psize,
+                idc.FF_QWORD if size == 8 else idc.FF_DWORD,
+                psize,
+                idc.BADADDR,
+            )
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()

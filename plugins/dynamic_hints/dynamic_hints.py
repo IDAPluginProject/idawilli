@@ -1,4 +1,4 @@
-'''
+"""
 example of:
   - providing custom UI hints with dynamic data from Python
 
@@ -7,13 +7,14 @@ a more useful plugin might inspect the hovered line, and display some documentat
 
 Author: Willi Ballenthin <william.ballenthin@fireeye.com>
 Licence: Apache 2.0
-'''
-import sys
-import datetime
+"""
 
-import idc
+import datetime
+import sys
+
 import idaapi
 import idautils
+import idc
 
 
 class HintsHooks(idaapi.UI_Hooks):
@@ -22,10 +23,13 @@ class HintsHooks(idaapi.UI_Hooks):
         _, x, y = idaapi.get_custom_viewer_place(view, True)
         ea = place.toea()
 
-        return ('0x%08X: %s' % (place.toea(), datetime.datetime.now().isoformat(' ')), 1)
+        return (
+            "0x%08X: %s" % (place.toea(), datetime.datetime.now().isoformat(" ")),
+            1,
+        )
 
     def get_ea_hint(self, ea):
-        return datetime.datetime.now().isoformat(' ')
+        return datetime.datetime.now().isoformat(" ")
 
 
 class DynHints2Plugin(idaapi.plugin_t):
@@ -36,17 +40,16 @@ class DynHints2Plugin(idaapi.plugin_t):
     wanted_name = "DynHints2"
     wanted_hotkey = "Ctrl-["
 
-
     def init(self):
         self.hooks = HintsHooks()
         return idaapi.PLUGIN_OK
 
     def run(self, arg):
-        print('hints2: run')
+        print("hints2: run")
         self.hooks.hook()
 
     def term(self):
-        print('hints2: term')
+        print("hints2: term")
         self.hooks.unhook()
 
 

@@ -1,5 +1,5 @@
-import idc
 import idautils
+import idc
 
 
 def enum_segments():
@@ -10,7 +10,7 @@ def enum_segments():
 
 
 def find_pointers(start, end):
-    for va in range(start, end-0x4):
+    for va in range(start, end - 0x4):
         ptr = idc.get_wide_dword(va)
         if idc.get_segm_start(ptr) == idc.BADADDR:
             continue
@@ -39,6 +39,8 @@ def is_code(va):
 
 
 CACHED_STRINGS = list(idautils.Strings())
+
+
 def is_in_string(va):
     for s in CACHED_STRINGS:
         if s.ea <= va < s.ea + s.length:
@@ -56,7 +58,7 @@ def is_unknown(va):
 
 def main():
     for segstart, segend, segname in enum_segments():
-        if segname not in ('.text', '.data'):
+        if segname not in (".text", ".data"):
             continue
 
         for src, dst in find_pointers(segstart, segend):
@@ -64,7 +66,7 @@ def main():
                 # ignore instructions like:
                 #
                 #     call    ds:__vbaGenerateBoundsError
-                #print('code pointer: 0x%x -> 0x%x' % (src, dst))
+                # print('code pointer: 0x%x -> 0x%x' % (src, dst))
                 continue
 
             if is_in_string(src):
@@ -73,14 +75,14 @@ def main():
                 #     text:004245B0 aRequestid    db 'requestID',
                 #
                 # enable or disable this behavior as you wish
-                print('string pointer: 0x%x -> 0x%x' % (src, dst))
+                print("string pointer: 0x%x -> 0x%x" % (src, dst))
                 pass
-                #continue
+                # continue
 
-            print('pointer from 0x%x to 0x%x' % (src, dst))
+            print("pointer from 0x%x to 0x%x" % (src, dst))
 
             if is_unknown(dst):
-                print('destination unknown, making byte: 0x%x' % (dst))
+                print("destination unknown, making byte: 0x%x" % (dst))
                 ida_bytes.create_data(dst, FF_BYTE, 1, ida_idaapi.BADADDR)
 
             elif is_head(dst):
@@ -90,7 +92,7 @@ def main():
             else:
                 # need to undefine head, and make byte
                 head_va = get_head(dst)
-                print('destination overlaps with head: 0x%x' % (head_va))
+                print("destination overlaps with head: 0x%x" % (head_va))
                 ida_bytes.del_items(head_va, dst - head_va)
                 ida_bytes.create_data(head_va, FF_BYTE, 1, ida_idaapi.BADADDR)
                 ida_bytes.create_data(dst, FF_BYTE, 1, ida_idaapi.BADADDR)
@@ -101,5 +103,5 @@ def main():
             idc.op_plain_offset(src, -1, 0)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

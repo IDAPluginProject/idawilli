@@ -6,8 +6,6 @@ import re
 from pathlib import Path
 
 import pytest
-from rich.console import Console
-
 from ida_codemode_agent.cli import (
     ScriptEvaluator,
     _build_openai_compatible_model,
@@ -18,6 +16,7 @@ from ida_codemode_agent.cli import (
     parse_args,
     resolve_database_plan,
 )
+from rich.console import Console
 
 
 def test_main_validates_model_before_database_resolution(

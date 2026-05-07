@@ -6,18 +6,18 @@ Author: Willi Ballenthin <william.ballenthin@fireeye.com>
 Licence: Apache 2.0
 """
 
-import re
 import logging
+import re
 from typing import Optional
 
-import idc
-import idaapi
+import ida_bytes
+import ida_kernwin
+import ida_lines
 import ida_nalt
 import ida_xref
+import idaapi
 import idautils
-import ida_bytes
-import ida_lines
-import ida_kernwin
+import idc
 
 logger = logging.getLogger(__name__)
 DEFAULT_IMPORTANT_LINES_NUM = 5
@@ -146,7 +146,6 @@ def lex(curline):
     offset = 0
     cur_word: list[str] = []
     while offset < len(curline):
-
         c = curline[offset]
 
         if c == ida_lines.COLOR_ON:
@@ -291,7 +290,9 @@ def enum_string_refs_in_function(fva):
 
             CALC_MAX_LEN = -1
             try:
-                s = ida_bytes.get_strlit_contents(ref, CALC_MAX_LEN, stype).decode("utf-8")
+                s = ida_bytes.get_strlit_contents(ref, CALC_MAX_LEN, stype).decode(
+                    "utf-8"
+                )
             except UnicodeDecodeError:
                 s = str(ida_bytes.get_strlit_contents(ref, CALC_MAX_LEN, stype))
 
@@ -423,7 +424,11 @@ class CallsHintsHook(ida_kernwin.UI_Hooks):
             # the remaining lines get shown if you scroll down while the hint is displayed, revealing more lines.
             return render_function_hint(fva), DEFAULT_IMPORTANT_LINES_NUM
         except Exception as e:
-            logger.warning("unexpected exception: %s. Get in touch with @williballenthin.", e, exc_info=True)
+            logger.warning(
+                "unexpected exception: %s. Get in touch with @williballenthin.",
+                e,
+                exc_info=True,
+            )
             return None
 
 

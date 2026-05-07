@@ -95,7 +95,9 @@ def is_global_data_segment(ea: int) -> bool:
     if seg_type not in (ida_segment.SEG_DATA, ida_segment.SEG_BSS):
         logger.debug(
             "0x%X: segment type %d not DATA/BSS (seg: %s)",
-            ea, seg_type, ida_segment.get_segm_name(seg),
+            ea,
+            seg_type,
+            ida_segment.get_segm_name(seg),
         )
         return False
     return True
@@ -110,12 +112,16 @@ def get_struct_fields(tif: ida_typeinf.tinfo_t) -> list[FieldInfo]:
 
     udt = ida_typeinf.udt_type_data_t()
     if not tif.get_udt_details(udt):
-        logger.debug("get_struct_fields: failed to get UDT details for '%s'", tif.dstr())
+        logger.debug(
+            "get_struct_fields: failed to get UDT details for '%s'", tif.dstr()
+        )
         return fields
 
     field_count = udt.size()
     if field_count > MAX_FIELDS:
-        logger.warning("Structure has %d fields, truncating to %d", field_count, MAX_FIELDS)
+        logger.warning(
+            "Structure has %d fields, truncating to %d", field_count, MAX_FIELDS
+        )
         field_count = MAX_FIELDS
 
     for i in range(field_count):
@@ -296,7 +302,9 @@ class GlobalStructDissectorHooks(idaapi.IDP_Hooks):
             logger.debug("0x%X: struct tid 0x%X but get_type_by_tid failed", ea, tid)
             return None
 
-        logger.debug("0x%X: tinfo = '%s' (via struct flags, tid=0x%X)", ea, tif.dstr(), tid)
+        logger.debug(
+            "0x%X: tinfo = '%s' (via struct flags, tid=0x%X)", ea, tif.dstr(), tid
+        )
         return tif
 
     def _output_field_line(self, ctx, field: FieldInfo, base_ea: int, indent: int):
@@ -425,7 +433,9 @@ class GlobalStructDissectorHooks(idaapi.IDP_Hooks):
                             ctx.out_line(" = ")
                             ctx.out_tagoff(ida_lines.COLOR_SYMBOL)
                             ctx.flush_outbuf()
-                            self._output_struct(ctx, elem_ea, field.elem_tinfo, indent + 2)
+                            self._output_struct(
+                                ctx, elem_ea, field.elem_tinfo, indent + 2
+                            )
                         else:
                             inner_prefix = " " * ((indent + 1) * INDENT_SIZE)
                             ctx.out_line(inner_prefix)
@@ -539,18 +549,26 @@ class GlobalStructDissectorHooks(idaapi.IDP_Hooks):
         if item_size != type_size:
             logger.debug(
                 "0x%X: item size %d != type size %d for '%s', skipping (data type changed?)",
-                ea, item_size, type_size, tif.dstr(),
+                ea,
+                item_size,
+                type_size,
+                tif.dstr(),
             )
             return 0
 
         unwrapped = unwrap_type(tif)
         if unwrapped is None:
-            logger.debug("0x%X: type '%s' is not a struct/union (after unwrap)", ea, tif.dstr())
+            logger.debug(
+                "0x%X: type '%s' is not a struct/union (after unwrap)", ea, tif.dstr()
+            )
             return 0
 
         logger.debug(
             "0x%X: dissecting struct '%s' (array=%s, count=%d)",
-            ea, unwrapped.tinfo.dstr(), unwrapped.is_array, unwrapped.array_count,
+            ea,
+            unwrapped.tinfo.dstr(),
+            unwrapped.is_array,
+            unwrapped.array_count,
         )
 
         try:
@@ -589,7 +607,9 @@ class global_struct_dissector_plugmod_t(ida_idaapi.plugmod_t):
             ida_auto.auto_wait()
 
         self.register_hooks()
-        logger.info("Global Struct Dissector plugin loaded (set logging to DEBUG for diagnostics)")
+        logger.info(
+            "Global Struct Dissector plugin loaded (set logging to DEBUG for diagnostics)"
+        )
 
     def register_hooks(self):
         """Register IDP hooks."""

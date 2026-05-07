@@ -1,15 +1,15 @@
 from __future__ import annotations
 
-import os
-import re
-import sys
 import argparse
 import datetime
+import os
+import re
 import subprocess
-from typing import Any
-from pathlib import Path
-from dataclasses import dataclass
+import sys
 from collections.abc import Iterator
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any
 
 if sys.version_info < (3, 10):
     # once we drop support for Python 3.9,
@@ -18,14 +18,14 @@ if sys.version_info < (3, 10):
 else:
     import importlib.metadata as importlib_metadata
 
+import packaging.version
+import platformdirs
+import requests.exceptions
 import rich
 import rich.table
-import platformdirs
-import packaging.version
-import requests.exceptions
+from requests_cache import CachedResponse, CachedSession, OriginalResponse, SQLiteCache
 from rich.markdown import Markdown
 from rich.progress import Progress
-from requests_cache import SQLiteCache, CachedSession, CachedResponse, OriginalResponse
 
 import idapro_plugin_manager.mirror
 
@@ -65,7 +65,9 @@ def get_session() -> CachedSession:
     return CachedSession(backend=SQLiteCache(cache_file))
 
 
-def get_project_with_refresh(session: CachedSession, name: str, last_serial: int) -> OriginalResponse | CachedResponse:
+def get_project_with_refresh(
+    session: CachedSession, name: str, last_serial: int
+) -> OriginalResponse | CachedResponse:
     """Get a http cached pypi project, force refresh in case of last serial mismatch."""
     response = session.get(f"https://pypi.org/pypi/{name}/json")
     if int(response.headers.get("X-PyPI-Last-Serial", -1)) != last_serial:
@@ -115,7 +117,9 @@ def iter_plugins() -> Iterator[PluginInfo]:
             try:
                 response = get_project_with_refresh(session, name, last_serial)
                 if response.status_code == 404:
-                    progress.console.print(f"Skipping {name}: Not found on JSON API (404)", style="yellow")
+                    progress.console.print(
+                        f"Skipping {name}: Not found on JSON API (404)", style="yellow"
+                    )
                     progress.advance(task)
                     continue
                 response.raise_for_status()
@@ -133,28 +137,44 @@ def iter_plugins() -> Iterator[PluginInfo]:
                 last_release_date_str = "N/A"
                 releases = data.get("releases", {})
 
-                for version_str in sorted(releases.keys(), key=version_sort_key, reverse=True):
+                for version_str in sorted(
+                    releases.keys(), key=version_sort_key, reverse=True
+                ):
                     release_entries = releases.get(version_str, [])
                     if not release_entries:
                         # no files for this version
                         continue
 
-                    non_yanked_entries = [e for e in release_entries if not e.get("yanked", False)]
+                    non_yanked_entries = [
+                        e for e in release_entries if not e.get("yanked", False)
+                    ]
 
                     if non_yanked_entries:
-                        upload_time_iso = max(e["upload_time_iso_8601"] for e in non_yanked_entries)
-                        release_date = datetime.date.fromisoformat(upload_time_iso.split("T")[0])
+                        upload_time_iso = max(
+                            e["upload_time_iso_8601"] for e in non_yanked_entries
+                        )
+                        release_date = datetime.date.fromisoformat(
+                            upload_time_iso.split("T")[0]
+                        )
                         last_release_str = version_str
                         last_release_date_str = release_date.strftime("%b %d, %Y")
                         break
 
-                    elif not info.get("yanked", False) and all(e.get("yanked", False) for e in release_entries):
+                    elif not info.get("yanked", False) and all(
+                        e.get("yanked", False) for e in release_entries
+                    ):
                         # All files for this version are yanked,
                         # but the version itself is not marked yanked at top level.
-                        upload_time_iso = max(e["upload_time_iso_8601"] for e in release_entries)
-                        release_date = datetime.date.fromisoformat(upload_time_iso.split("T")[0])
+                        upload_time_iso = max(
+                            e["upload_time_iso_8601"] for e in release_entries
+                        )
+                        release_date = datetime.date.fromisoformat(
+                            upload_time_iso.split("T")[0]
+                        )
                         last_release_str = version_str
-                        last_release_date_str = release_date.strftime("%b %d, %Y (all files yanked)")
+                        last_release_date_str = release_date.strftime(
+                            "%b %d, %Y (all files yanked)"
+                        )
                         break
 
                 installed_version_str: str | None = None
@@ -166,7 +186,9 @@ def iter_plugins() -> Iterator[PluginInfo]:
                     if last_release_str != "N/A" and installed_version_str:
                         try:
                             pypi_ver = packaging.version.parse(last_release_str)
-                            installed_ver = packaging.version.parse(installed_version_str)
+                            installed_ver = packaging.version.parse(
+                                installed_version_str
+                            )
                             if pypi_ver > installed_ver:
                                 is_outdated = True
                             else:
@@ -188,7 +210,8 @@ def iter_plugins() -> Iterator[PluginInfo]:
 
             except requests.exceptions.HTTPError as e:
                 progress.console.print(
-                    f"Error fetching {name}: HTTP {e.response.status_code} - {e.response.reason}", style="red"
+                    f"Error fetching {name}: HTTP {e.response.status_code} - {e.response.reason}",
+                    style="red",
                 )
             finally:
                 progress.advance(task)
@@ -248,9 +271,7 @@ def handle_list_command(args: argparse.Namespace) -> int:
 
         if installed_version is not None:
             if is_outdated is True:
-                plugin_name_display += (
-                    f" [grey30](installed: {installed_version}, latest: {plugin_info.last_release})[/]"
-                )
+                plugin_name_display += f" [grey30](installed: {installed_version}, latest: {plugin_info.last_release})[/]"
             elif is_outdated is False:  # Explicitly up-to-date or same version
                 plugin_name_display += " [grey30](installed)[/]"
             else:  # is_outdated is None (e.g., PyPI version N/A or version parse error)
@@ -287,7 +308,9 @@ def handle_show_command(args: argparse.Namespace) -> int:
         table.add_row("Version", info.get("version"))
         table.add_row("Summary", info.get("summary") or "N/A")
         table.add_row("Author", info.get("author_email") or info.get("author") or "N/A")
-        table.add_row("License", info.get("license_expression") or info.get("license") or "N/A")
+        table.add_row(
+            "License", info.get("license_expression") or info.get("license") or "N/A"
+        )
         if info.get("requires_python"):
             table.add_row("Requires Python", info.get("requires_python") or "N/A")
         if info.get("keywords"):
@@ -336,17 +359,25 @@ def handle_show_command(args: argparse.Namespace) -> int:
                     all_files_yanked = False
                 else:
                     upload_times = [
-                        e["upload_time_iso_8601"] for e in release_files_list if "upload_time_iso_8601" in e
+                        e["upload_time_iso_8601"]
+                        for e in release_files_list
+                        if "upload_time_iso_8601" in e
                     ]
                     if not upload_times:
                         upload_date = None
                     else:
                         earliest_upload_time_iso = min(upload_times)
-                        upload_date = datetime.datetime.fromisoformat(earliest_upload_time_iso.replace("Z", "+00:00"))
-                    all_files_yanked = all(e.get("yanked", False) for e in release_files_list)
+                        upload_date = datetime.datetime.fromisoformat(
+                            earliest_upload_time_iso.replace("Z", "+00:00")
+                        )
+                    all_files_yanked = all(
+                        e.get("yanked", False) for e in release_files_list
+                    )
 
                 if upload_date:
-                    version_history_data.append((upload_date, version_s, all_files_yanked))
+                    version_history_data.append(
+                        (upload_date, version_s, all_files_yanked)
+                    )
 
             version_history_data.sort(key=lambda x: x[0], reverse=True)
 
@@ -354,14 +385,18 @@ def handle_show_command(args: argparse.Namespace) -> int:
                 for date_obj, ver_str, is_yanked in version_history_data:
                     date_display = date_obj.strftime("%b %d, %Y")
                     status = " [yellow](yanked)[/yellow]" if is_yanked else ""
-                    version_history_lines.append(f"[cyan]{ver_str:<15}[/] [magenta]{date_display:<15}[/] {status}")
+                    version_history_lines.append(
+                        f"[cyan]{ver_str:<15}[/] [magenta]{date_display:<15}[/] {status}"
+                    )
                 table.add_row("Version History", "\n".join(version_history_lines))
 
         description = info.get("description", "")
         if description:
             description_content_type = info.get("description_content_type", "")
             if description_content_type == "text/markdown":
-                table.add_row(f"Description ({description_content_type})", Markdown(description))
+                table.add_row(
+                    f"Description ({description_content_type})", Markdown(description)
+                )
             else:
                 table.add_row(f"Description ({description_content_type})", description)
 
@@ -383,8 +418,12 @@ def handle_install_command(args: argparse.Namespace) -> int:
     package_spec = args.package_spec
 
     if not is_valid_package_spec(package_spec):
-        rich.print(f"[bold red]Error: Invalid package specification '{package_spec}'[/]")
-        rich.print("Package name must contain only alphanumeric characters, hyphens, underscores, and dots.")
+        rich.print(
+            f"[bold red]Error: Invalid package specification '{package_spec}'[/]"
+        )
+        rich.print(
+            "Package name must contain only alphanumeric characters, hyphens, underscores, and dots."
+        )
         rich.print("Version specifications like '==1.0.0' are allowed.")
         return -1
 
@@ -414,7 +453,9 @@ def handle_remove_command(args: argparse.Namespace) -> int:
 
     if not is_valid_package_spec(package_name):
         rich.print(f"[bold red]Error: Invalid package name '{package_name}'[/]")
-        rich.print("Package name must contain only alphanumeric characters, hyphens, underscores, and dots.")
+        rich.print(
+            "Package name must contain only alphanumeric characters, hyphens, underscores, and dots."
+        )
         return -1
 
     try:
@@ -445,7 +486,9 @@ def handle_update_command(args: argparse.Namespace) -> int:
 
     if not is_valid_package_spec(package_name):
         rich.print(f"[bold red]Error: Invalid package name '{package_name}'[/]")
-        rich.print("Package name must contain only alphanumeric characters, hyphens, underscores, and dots.")
+        rich.print(
+            "Package name must contain only alphanumeric characters, hyphens, underscores, and dots."
+        )
         return -1
 
     try:
@@ -460,7 +503,10 @@ def handle_update_command(args: argparse.Namespace) -> int:
 
     if success:
         # Check if there was actually an update or if it was already up to date
-        if "already satisfied" in output.lower() or "already up-to-date" in output.lower():
+        if (
+            "already satisfied" in output.lower()
+            or "already up-to-date" in output.lower()
+        ):
             rich.print(f"[green]{package_name} is already up to date[/]")
         else:
             rich.print(f"[green]Successfully updated {package_name}[/]")
@@ -515,12 +561,16 @@ def handle_update_all_command(args: argparse.Namespace) -> int:
             latest_ver = packaging.version.parse(latest_version)
             if latest_ver > installed_ver:
                 plugins_to_update.append(plugin)
-                rich.print(f"  [cyan]{plugin}[/]: {installed_version} → {latest_version}")
+                rich.print(
+                    f"  [cyan]{plugin}[/]: {installed_version} → {latest_version}"
+                )
             else:
                 rich.print(f"  [green]{plugin}[/]: {installed_version} (up to date)")
         except packaging.version.InvalidVersion:
             plugins_to_update.append(plugin)
-            rich.print(f"  [yellow]{plugin}[/]: version comparison failed, will attempt update")
+            rich.print(
+                f"  [yellow]{plugin}[/]: version comparison failed, will attempt update"
+            )
 
     if not plugins_to_update:
         rich.print("\n[green]All plugins are up to date![/]")
@@ -589,23 +639,35 @@ def handle_register_command(args: argparse.Namespace) -> int:
     if bootstrap_file.exists():
         existing_content = bootstrap_file.read_text()
         if existing_content.strip() == BOOTSTRAP_PLUGIN_CONTENT.strip():
-            rich.print("[green]Bootstrap plugin is already installed and up to date.[/]")
+            rich.print(
+                "[green]Bootstrap plugin is already installed and up to date.[/]"
+            )
             return 0
 
         else:
-            rich.print("[bold red]Error: Bootstrap plugin file already exists with different content.[/]")
+            rich.print(
+                "[bold red]Error: Bootstrap plugin file already exists with different content.[/]"
+            )
             rich.print(f"File location: {bootstrap_file}")
-            rich.print("The existing file may be from a different version or manually modified.")
-            rich.print("Please backup and remove the existing file if you want to proceed.")
+            rich.print(
+                "The existing file may be from a different version or manually modified."
+            )
+            rich.print(
+                "Please backup and remove the existing file if you want to proceed."
+            )
             return -1
 
     try:
         bootstrap_file.write_text(BOOTSTRAP_PLUGIN_CONTENT)
-        rich.print(f"[green]Successfully installed bootstrap plugin to {bootstrap_file}[/]")
+        rich.print(
+            f"[green]Successfully installed bootstrap plugin to {bootstrap_file}[/]"
+        )
         rich.print("The IDA Pro Plugin Manager is now registered with IDA Pro.")
         return 0
     except PermissionError:
-        rich.print("[bold red]Error: Permission denied writing to IDA plugins directory.[/]")
+        rich.print(
+            "[bold red]Error: Permission denied writing to IDA plugins directory.[/]"
+        )
         return -1
 
 
@@ -615,8 +677,12 @@ def handle_mirror_command(args: argparse.Namespace) -> int:
 
     if not package_names:
         if not args.yes:
-            rich.print("No packages specified. Do you want to mirror all available IDA Pro plugins?")
-            rich.print("[yellow]This will download all discovered IDA Pro plugins from PyPI and their dependencies.[/]")
+            rich.print(
+                "No packages specified. Do you want to mirror all available IDA Pro plugins?"
+            )
+            rich.print(
+                "[yellow]This will download all discovered IDA Pro plugins from PyPI and their dependencies.[/]"
+            )
 
             response = input("Continue? [y/N]: ").strip().lower()
             if response not in ["y", "yes"]:
@@ -653,15 +719,23 @@ def main() -> int:
     parser = argparse.ArgumentParser(
         description="IDA Pro Plugin Manager (ippm). Manages IDA Pro plugins found on PyPI."
     )
-    subparsers = parser.add_subparsers(dest="command", required=True, help="Available commands")
+    subparsers = parser.add_subparsers(
+        dest="command", required=True, help="Available commands"
+    )
 
-    version_parser = subparsers.add_parser("version", help="Show program's version number and exit.")
+    version_parser = subparsers.add_parser(
+        "version", help="Show program's version number and exit."
+    )
     version_parser.set_defaults(func=handle_version_command)
 
-    register_parser = subparsers.add_parser("register", help="Register the plugin manager with IDA Pro.")
+    register_parser = subparsers.add_parser(
+        "register", help="Register the plugin manager with IDA Pro."
+    )
     register_parser.set_defaults(func=handle_register_command)
 
-    install_parser = subparsers.add_parser("install", help="Install an IDA Pro plugin from PyPI.")
+    install_parser = subparsers.add_parser(
+        "install", help="Install an IDA Pro plugin from PyPI."
+    )
     install_parser.add_argument(
         "package_spec",
         metavar="PACKAGE",
@@ -669,28 +743,49 @@ def main() -> int:
     )
     install_parser.set_defaults(func=handle_install_command)
 
-    remove_parser = subparsers.add_parser("remove", help="Remove an installed IDA Pro plugin.")
-    remove_parser.add_argument("package_name", metavar="PACKAGE_NAME", help="The name of the plugin to remove.")
+    remove_parser = subparsers.add_parser(
+        "remove", help="Remove an installed IDA Pro plugin."
+    )
+    remove_parser.add_argument(
+        "package_name", metavar="PACKAGE_NAME", help="The name of the plugin to remove."
+    )
     remove_parser.set_defaults(func=handle_remove_command)
 
-    update_parser = subparsers.add_parser("update", help="Update a specific IDA Pro plugin to its latest version.")
-    update_parser.add_argument("package_name", metavar="PACKAGE_NAME", help="The name of the plugin to update.")
+    update_parser = subparsers.add_parser(
+        "update", help="Update a specific IDA Pro plugin to its latest version."
+    )
+    update_parser.add_argument(
+        "package_name", metavar="PACKAGE_NAME", help="The name of the plugin to update."
+    )
     update_parser.set_defaults(func=handle_update_command)
 
     update_all_parser = subparsers.add_parser(
-        "update-all", help="Update all outdated IDA Pro plugins to their latest versions."
+        "update-all",
+        help="Update all outdated IDA Pro plugins to their latest versions.",
     )
     update_all_parser.set_defaults(func=handle_update_all_command)
 
-    list_parser = subparsers.add_parser("list", help="List available IDA Pro plugins on PyPI.")
+    list_parser = subparsers.add_parser(
+        "list", help="List available IDA Pro plugins on PyPI."
+    )
     list_parser.set_defaults(func=handle_list_command)
 
-    show_parser = subparsers.add_parser("show", help="Show detailed information for a specific plugin on PyPI.")
-    show_parser.add_argument("plugin_name", metavar="PLUGIN_NAME", help="The name of the plugin on PyPI.")
+    show_parser = subparsers.add_parser(
+        "show", help="Show detailed information for a specific plugin on PyPI."
+    )
+    show_parser.add_argument(
+        "plugin_name", metavar="PLUGIN_NAME", help="The name of the plugin on PyPI."
+    )
     show_parser.set_defaults(func=handle_show_command)
 
-    mirror_parser = subparsers.add_parser("mirror", help="Create a PEP 503 compliant local PyPI repository mirror.")
-    mirror_parser.add_argument("repo_dir", metavar="REPO_DIR", help="Directory to create the local repository in.")
+    mirror_parser = subparsers.add_parser(
+        "mirror", help="Create a PEP 503 compliant local PyPI repository mirror."
+    )
+    mirror_parser.add_argument(
+        "repo_dir",
+        metavar="REPO_DIR",
+        help="Directory to create the local repository in.",
+    )
     mirror_parser.add_argument(
         "package_names",
         metavar="PACKAGE",
@@ -698,7 +793,9 @@ def main() -> int:
         help="Package names to mirror (if none specified, will prompt to mirror all IDA plugins).",
     )
     mirror_parser.add_argument(
-        "--yes", action="store_true", help="Automatically answer yes to prompts when mirroring all IDA plugins."
+        "--yes",
+        action="store_true",
+        help="Automatically answer yes to prompts when mirroring all IDA plugins.",
     )
     mirror_parser.set_defaults(func=handle_mirror_command)
 

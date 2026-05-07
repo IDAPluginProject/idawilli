@@ -1,6 +1,6 @@
-import idc
-import idautils
 import ida_offset
+import idautils
+import idc
 
 reftype = ida_offset.get_default_reftype(next(idautils.Segments()))
 

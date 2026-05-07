@@ -3,16 +3,14 @@ from pathlib import Path
 
 import pytest
 from conftest import run_ida_script
-
 from oplog_events import (
     EdmModel,
-    UdmModel,
     EventList,
     LocalTypeChange,
-    ti_changed_event,
-    changing_ti_event,
-    op_ti_changed_event,
+    UdmModel,
     changing_op_ti_event,
+    changing_ti_event,
+    local_types_changed_event,
     lt_edm_changed_event,
     lt_edm_created_event,
     lt_edm_deleted_event,
@@ -22,7 +20,8 @@ from oplog_events import (
     lt_udm_deleted_event,
     lt_udm_renamed_event,
     lt_udt_expanded_event,
-    local_types_changed_event,
+    op_ti_changed_event,
+    ti_changed_event,
 )
 
 
@@ -115,7 +114,9 @@ def test_op_ti_changed(test_binary: Path, session_idauser: Path, work_dir: Path)
     )
 
     event_list = EventList.model_validate_json(events_path.read_text())
-    changing_events = [e for e in event_list.root if isinstance(e, changing_op_ti_event)]
+    changing_events = [
+        e for e in event_list.root if isinstance(e, changing_op_ti_event)
+    ]
     changed_events = [e for e in event_list.root if isinstance(e, op_ti_changed_event)]
 
     # Filter for our specific address
@@ -181,7 +182,9 @@ def test_local_types_changed(test_binary: Path, session_idauser: Path, work_dir:
     )
 
     event_list = EventList.model_validate_json(events_path.read_text())
-    local_types_events = [e for e in event_list.root if isinstance(e, local_types_changed_event)]
+    local_types_events = [
+        e for e in event_list.root if isinstance(e, local_types_changed_event)
+    ]
 
     assert len(local_types_events) >= 1
 

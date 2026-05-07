@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import pydantic_monty
-
 from ida_codemode_sandbox import IdaSandbox, SandboxError, SandboxResult
 
 

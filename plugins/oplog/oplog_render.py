@@ -3,41 +3,54 @@ from datetime import datetime
 import ida_funcs
 import ida_lines
 from ida_lines import COLSTR, tag_addr
-
 from oplog_events import (
-    ui_event,
-    idb_event,
-    renamed_event,
-    make_code_event,
-    make_data_event,
-    func_added_event,
-    segm_added_event,
-    segm_moved_event,
-    ti_changed_event,
     adding_segm_event,
+    allsegs_moved_event,
+    bookmark_changed_event,
+    byte_patched_event,
+    callee_addr_changed_event,
+    changing_cmt_event,
+    changing_op_ti_event,
+    changing_op_type_event,
+    changing_range_cmt_event,
+    changing_segm_class_event,
+    changing_segm_end_event,
+    changing_segm_name_event,
+    changing_segm_start_event,
     changing_ti_event,
     cmt_changed_event,
-    sgr_changed_event,
-    sgr_deleted_event,
-    byte_patched_event,
-    changing_cmt_event,
+    current_item_changed_event,
+    deleting_func_event,
+    deleting_func_tail_event,
+    deleting_segm_event,
+    deleting_tryblks_event,
+    destroyed_items_event,
+    determined_main_event,
     dirtree_link_event,
+    dirtree_mkdir_event,
     dirtree_move_event,
     dirtree_rank_event,
-    func_deleted_event,
-    func_updated_event,
-    segm_deleted_event,
-    set_func_end_event,
-    allsegs_moved_event,
-    deleting_func_event,
-    deleting_segm_event,
-    dirtree_mkdir_event,
     dirtree_rmdir_event,
+    dirtree_rminode_event,
+    dirtree_segm_moved_event,
+    extra_cmt_changed_event,
     frame_created_event,
     frame_deleted_event,
-    op_ti_changed_event,
-    changing_op_ti_event,
     frame_expanded_event,
+    frame_udm_changed_event,
+    frame_udm_created_event,
+    frame_udm_deleted_event,
+    frame_udm_renamed_event,
+    func_added_event,
+    func_deleted_event,
+    func_noret_changed_event,
+    func_tail_appended_event,
+    func_tail_deleted_event,
+    func_updated_event,
+    idasgn_matched_ea_event,
+    idb_event,
+    item_color_changed_event,
+    local_types_changed_event,
     lt_edm_changed_event,
     lt_edm_created_event,
     lt_edm_deleted_event,
@@ -46,46 +59,32 @@ from oplog_events import (
     lt_udm_created_event,
     lt_udm_deleted_event,
     lt_udm_renamed_event,
-    set_func_start_event,
-    destroyed_items_event,
-    determined_main_event,
-    dirtree_rminode_event,
     lt_udt_expanded_event,
+    make_code_event,
+    make_data_event,
+    op_ti_changed_event,
     op_type_changed_event,
-    stkpnts_changed_event,
-    tryblks_updated_event,
-    bookmark_changed_event,
-    changing_op_type_event,
-    deleting_tryblks_event,
-    segm_end_changed_event,
-    updating_tryblks_event,
-    changing_segm_end_event,
-    extra_cmt_changed_event,
-    frame_udm_changed_event,
-    frame_udm_created_event,
-    frame_udm_deleted_event,
-    frame_udm_renamed_event,
-    func_tail_deleted_event,
-    idasgn_matched_ea_event,
     range_cmt_changed_event,
-    segm_name_changed_event,
-    changing_range_cmt_event,
-    changing_segm_name_event,
-    deleting_func_tail_event,
-    dirtree_segm_moved_event,
-    func_noret_changed_event,
-    func_tail_appended_event,
-    item_color_changed_event,
+    renamed_event,
+    segm_added_event,
     segm_attrs_updated_event,
     segm_class_changed_event,
+    segm_deleted_event,
+    segm_end_changed_event,
+    segm_moved_event,
+    segm_name_changed_event,
     segm_start_changed_event,
+    set_func_end_event,
+    set_func_start_event,
+    sgr_changed_event,
+    sgr_deleted_event,
+    stkpnts_changed_event,
     tail_owner_changed_event,
     thunk_func_created_event,
-    callee_addr_changed_event,
-    changing_segm_class_event,
-    changing_segm_start_event,
-    local_types_changed_event,
-    current_item_changed_event,
+    ti_changed_event,
+    tryblks_updated_event,
+    ui_event,
+    updating_tryblks_event,
 )
 
 
@@ -152,17 +151,27 @@ def render_renamed(ev: renamed_event):
 
 
 def render_frame_udm_renamed(ev: frame_udm_renamed_event):
-    func_desc = cname(ev.func_name, ev.func_ea) if ev.func_name else render_address(ev.func_ea)
+    func_desc = (
+        cname(ev.func_name, ev.func_ea) if ev.func_name else render_address(ev.func_ea)
+    )
     return f"{pretty_date(ev.timestamp)}: local variable renamed: {cname(ev.oldname)} → {cname(ev.udm.name)} in {func_desc}"
 
 
 def render_adding_segm(ev: adding_segm_event):
-    name = ev.s.segment_name if ev.s.segment_name else f"at {render_address(ev.s.start_ea)}"
+    name = (
+        ev.s.segment_name
+        if ev.s.segment_name
+        else f"at {render_address(ev.s.start_ea)}"
+    )
     return f"{pretty_date(ev.timestamp)}: segment adding: {cname(name)} ({render_address(ev.s.start_ea)}-{render_address(ev.s.end_ea)})"
 
 
 def render_segm_added(ev: segm_added_event):
-    name = ev.s.segment_name if ev.s.segment_name else f"at {render_address(ev.s.start_ea)}"
+    name = (
+        ev.s.segment_name
+        if ev.s.segment_name
+        else f"at {render_address(ev.s.start_ea)}"
+    )
     return f"{pretty_date(ev.timestamp)}: segment added: {cname(name)} ({render_address(ev.s.start_ea)}-{render_address(ev.s.end_ea)})"
 
 
@@ -177,27 +186,47 @@ def render_segm_deleted(ev: segm_deleted_event):
 
 
 def render_changing_segm_start(ev: changing_segm_start_event):
-    name = ev.s.segment_name if ev.s.segment_name else f"at {render_address(ev.s.start_ea)}"
+    name = (
+        ev.s.segment_name
+        if ev.s.segment_name
+        else f"at {render_address(ev.s.start_ea)}"
+    )
     return f"{pretty_date(ev.timestamp)}: segment start changing: {cname(name)} {render_address(ev.s.start_ea)} → {render_address(ev.new_start)}"
 
 
 def render_segm_start_changed(ev: segm_start_changed_event):
-    name = ev.s.segment_name if ev.s.segment_name else f"at {render_address(ev.s.start_ea)}"
+    name = (
+        ev.s.segment_name
+        if ev.s.segment_name
+        else f"at {render_address(ev.s.start_ea)}"
+    )
     return f"{pretty_date(ev.timestamp)}: segment start changed: {cname(name)} {render_address(ev.oldstart)} → {render_address(ev.s.start_ea)}"
 
 
 def render_changing_segm_end(ev: changing_segm_end_event):
-    name = ev.s.segment_name if ev.s.segment_name else f"at {render_address(ev.s.start_ea)}"
+    name = (
+        ev.s.segment_name
+        if ev.s.segment_name
+        else f"at {render_address(ev.s.start_ea)}"
+    )
     return f"{pretty_date(ev.timestamp)}: segment end changing: {cname(name)} {render_address(ev.s.end_ea)} → {render_address(ev.new_end)}"
 
 
 def render_segm_end_changed(ev: segm_end_changed_event):
-    name = ev.s.segment_name if ev.s.segment_name else f"at {render_address(ev.s.start_ea)}"
+    name = (
+        ev.s.segment_name
+        if ev.s.segment_name
+        else f"at {render_address(ev.s.start_ea)}"
+    )
     return f"{pretty_date(ev.timestamp)}: segment end changed: {cname(name)} {render_address(ev.oldend)} → {render_address(ev.s.end_ea)}"
 
 
 def render_changing_segm_name(ev: changing_segm_name_event):
-    current_name = ev.s.segment_name if ev.s.segment_name else f"at {render_address(ev.s.start_ea)}"
+    current_name = (
+        ev.s.segment_name
+        if ev.s.segment_name
+        else f"at {render_address(ev.s.start_ea)}"
+    )
     return f"{pretty_date(ev.timestamp)}: segment name changing: {cname(ev.oldname)} → {cname(current_name)}"
 
 
@@ -207,17 +236,29 @@ def render_segm_name_changed(ev: segm_name_changed_event):
 
 
 def render_changing_segm_class(ev: changing_segm_class_event):
-    name = ev.s.segment_name if ev.s.segment_name else f"at {render_address(ev.s.start_ea)}"
+    name = (
+        ev.s.segment_name
+        if ev.s.segment_name
+        else f"at {render_address(ev.s.start_ea)}"
+    )
     return f"{pretty_date(ev.timestamp)}: segment class changing: {cname(name)}"
 
 
 def render_segm_class_changed(ev: segm_class_changed_event):
-    name = ev.s.segment_name if ev.s.segment_name else f"at {render_address(ev.s.start_ea)}"
+    name = (
+        ev.s.segment_name
+        if ev.s.segment_name
+        else f"at {render_address(ev.s.start_ea)}"
+    )
     return f"{pretty_date(ev.timestamp)}: segment class changed: {cname(name)} → {codname(ev.sclass)}"
 
 
 def render_segm_attrs_updated(ev: segm_attrs_updated_event):
-    name = ev.s.segment_name if ev.s.segment_name else f"at {render_address(ev.s.start_ea)}"
+    name = (
+        ev.s.segment_name
+        if ev.s.segment_name
+        else f"at {render_address(ev.s.start_ea)}"
+    )
     return f"{pretty_date(ev.timestamp)}: segment attributes updated: {cname(name)}"
 
 
@@ -307,9 +348,21 @@ def render_tail_owner_changed(ev: tail_owner_changed_event):
     old_owner_name = ida_funcs.get_func_name(ev.old_owner)
     new_owner_name = ida_funcs.get_func_name(ev.owner_func)
 
-    tail_desc = cname(ev.tail.name, ev.tail.start_ea) if ev.tail.name else render_address(ev.tail.start_ea)
-    old_desc = cname(old_owner_name, ev.old_owner) if old_owner_name else render_address(ev.old_owner)
-    new_desc = cname(new_owner_name, ev.owner_func) if new_owner_name else render_address(ev.owner_func)
+    tail_desc = (
+        cname(ev.tail.name, ev.tail.start_ea)
+        if ev.tail.name
+        else render_address(ev.tail.start_ea)
+    )
+    old_desc = (
+        cname(old_owner_name, ev.old_owner)
+        if old_owner_name
+        else render_address(ev.old_owner)
+    )
+    new_desc = (
+        cname(new_owner_name, ev.owner_func)
+        if new_owner_name
+        else render_address(ev.owner_func)
+    )
 
     return f"{pretty_date(ev.timestamp)}: tail owner changed: {tail_desc} {old_desc} → {new_desc}"
 
@@ -511,9 +564,7 @@ def render_ti_changed(ev: ti_changed_event):
 
 def render_changing_op_ti(ev: changing_op_ti_event):
     type_desc = f" → {codname(ev.new_type_str)}" if ev.new_type_str else ""
-    return (
-        f"{pretty_date(ev.timestamp)}: operand type information changing: {render_address(ev.ea)} op{ev.n}{type_desc}"
-    )
+    return f"{pretty_date(ev.timestamp)}: operand type information changing: {render_address(ev.ea)} op{ev.n}{type_desc}"
 
 
 def render_op_ti_changed(ev: op_ti_changed_event):
@@ -526,12 +577,16 @@ def render_local_types_changed(ev: local_types_changed_event):
 
 
 def render_lt_udm_created(ev: lt_udm_created_event):
-    type_desc = f": {codname(ev.udm.type_name)}" if ev.udm.type_name != "(unnamed)" else ""
+    type_desc = (
+        f": {codname(ev.udm.type_name)}" if ev.udm.type_name != "(unnamed)" else ""
+    )
     return f"{pretty_date(ev.timestamp)}: struct member created: {codname(ev.udm.name)}{type_desc} in {codname(ev.udtname)}"
 
 
 def render_lt_udm_deleted(ev: lt_udm_deleted_event):
-    type_desc = f": {codname(ev.udm.type_name)}" if ev.udm.type_name != "(unnamed)" else ""
+    type_desc = (
+        f": {codname(ev.udm.type_name)}" if ev.udm.type_name != "(unnamed)" else ""
+    )
     return f"{pretty_date(ev.timestamp)}: struct member deleted: {codname(ev.udm.name)}{type_desc} from {codname(ev.udtname)}"
 
 
@@ -542,7 +597,9 @@ def render_lt_udm_renamed(ev: lt_udm_renamed_event):
 def render_lt_udm_changed(ev: lt_udm_changed_event):
     changes = []
     if ev.udmold.type_name != ev.udmnew.type_name:
-        changes.append(f"type: {codname(ev.udmold.type_name)} → {codname(ev.udmnew.type_name)}")
+        changes.append(
+            f"type: {codname(ev.udmold.type_name)} → {codname(ev.udmnew.type_name)}"
+        )
     if ev.udmold.size != ev.udmnew.size:
         changes.append(f"size: {ev.udmold.size} → {ev.udmnew.size}")
     if ev.udmold.cmt != ev.udmnew.cmt:
@@ -552,7 +609,9 @@ def render_lt_udm_changed(ev: lt_udm_changed_event):
 
 
 def render_lt_udt_expanded(ev: lt_udt_expanded_event):
-    member_desc = f" before {codname(ev.udm_name)}" if ev.udm_name != "(unnamed)" else ""
+    member_desc = (
+        f" before {codname(ev.udm_name)}" if ev.udm_name != "(unnamed)" else ""
+    )
     return f"{pretty_date(ev.timestamp)}: struct expanded: {codname(ev.udtname)}{member_desc} (delta: {ev.delta})"
 
 
@@ -583,11 +642,15 @@ def render_frame_created(ev: frame_created_event):
     if ev.func_name:
         return f"{pretty_date(ev.timestamp)}: frame created: {cname(ev.func_name, ev.func_ea)}"
     else:
-        return f"{pretty_date(ev.timestamp)}: frame created: {render_address(ev.func_ea)}"
+        return (
+            f"{pretty_date(ev.timestamp)}: frame created: {render_address(ev.func_ea)}"
+        )
 
 
 def render_frame_expanded(ev: frame_expanded_event):
-    func_desc = cname(ev.func_name, ev.func_ea) if ev.func_name else render_address(ev.func_ea)
+    func_desc = (
+        cname(ev.func_name, ev.func_ea) if ev.func_name else render_address(ev.func_ea)
+    )
     member_desc = f" before {cname(ev.udm_name)}" if ev.udm_name != "(unnamed)" else ""
     return f"{pretty_date(ev.timestamp)}: frame expanded: {func_desc}{member_desc} (delta: {ev.delta})"
 
@@ -600,22 +663,34 @@ def render_frame_deleted(ev: frame_deleted_event):
 
 
 def render_frame_udm_created(ev: frame_udm_created_event):
-    func_desc = cname(ev.func_name, ev.func_ea) if ev.func_name else render_address(ev.func_ea)
-    type_desc = f": {codname(ev.udm.type_name)}" if ev.udm.type_name != "(unnamed)" else ""
+    func_desc = (
+        cname(ev.func_name, ev.func_ea) if ev.func_name else render_address(ev.func_ea)
+    )
+    type_desc = (
+        f": {codname(ev.udm.type_name)}" if ev.udm.type_name != "(unnamed)" else ""
+    )
     return f"{pretty_date(ev.timestamp)}: local variable created: {cname(ev.udm.name)}{type_desc} in {func_desc}"
 
 
 def render_frame_udm_deleted(ev: frame_udm_deleted_event):
-    func_desc = cname(ev.func_name, ev.func_ea) if ev.func_name else render_address(ev.func_ea)
-    type_desc = f": {codname(ev.udm.type_name)}" if ev.udm.type_name != "(unnamed)" else ""
+    func_desc = (
+        cname(ev.func_name, ev.func_ea) if ev.func_name else render_address(ev.func_ea)
+    )
+    type_desc = (
+        f": {codname(ev.udm.type_name)}" if ev.udm.type_name != "(unnamed)" else ""
+    )
     return f"{pretty_date(ev.timestamp)}: local variable deleted: {cname(ev.udm.name)}{type_desc} from {func_desc}"
 
 
 def render_frame_udm_changed(ev: frame_udm_changed_event):
-    func_desc = cname(ev.func_name, ev.func_ea) if ev.func_name else render_address(ev.func_ea)
+    func_desc = (
+        cname(ev.func_name, ev.func_ea) if ev.func_name else render_address(ev.func_ea)
+    )
     changes = []
     if ev.udmold.type_name != ev.udmnew.type_name:
-        changes.append(f"type: {codname(ev.udmold.type_name)} → {codname(ev.udmnew.type_name)}")
+        changes.append(
+            f"type: {codname(ev.udmold.type_name)} → {codname(ev.udmnew.type_name)}"
+        )
     if ev.udmold.size != ev.udmnew.size:
         changes.append(f"size: {ev.udmold.size} → {ev.udmnew.size}")
     if ev.udmold.cmt != ev.udmnew.cmt:

@@ -1,6 +1,6 @@
-import sys
 import logging
 import platform
+import sys
 
 if sys.version_info < (3, 10):
     # once we drop support for Python 3.9,

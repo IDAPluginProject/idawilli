@@ -1,12 +1,11 @@
 import logging
 from typing import Iterator, List, Optional, Tuple
 
-import ida_name
+import ida_dirtree
 import ida_funcs
 import ida_idaapi
 import ida_kernwin
-import ida_dirtree
-
+import ida_name
 from ida_dirtree import dirtree_t
 
 logger = logging.getLogger("tag_func")
@@ -47,7 +46,9 @@ def dirtree_join(*parts: list[str]) -> str:
     return "/".join(parts)
 
 
-def dirtree_walk(dirtree: dirtree_t, top: str) -> Iterator[Tuple[str, List[str], List[str]]]:
+def dirtree_walk(
+    dirtree: dirtree_t, top: str
+) -> Iterator[Tuple[str, List[str], List[str]]]:
     """
     like os.walk over the given dirtree.
 

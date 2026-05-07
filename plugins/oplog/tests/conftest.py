@@ -1,8 +1,8 @@
-import os
-import sys
 import json
+import os
 import shutil
 import subprocess
+import sys
 from pathlib import Path
 
 import pytest
@@ -31,7 +31,9 @@ def get_ida_install_dir() -> str:
     if source_config.exists():
         data = json.loads(source_config.read_text())
         return data.get("Paths", {}).get("ida-install-dir", "")
-    raise RuntimeError("Could not find IDA install directory in ~/.idapro/ida-config.json")
+    raise RuntimeError(
+        "Could not find IDA install directory in ~/.idapro/ida-config.json"
+    )
 
 
 def _create_idauser(base_path: Path) -> Path:
@@ -47,13 +49,24 @@ def _create_idauser(base_path: Path) -> Path:
 
     ida_install_dir = get_ida_install_dir()
     result = subprocess.run(
-        ["uv", "run", "--with", "ida-hcli>=0.15", "hcli", "ida", "set-default", ida_install_dir],
+        [
+            "uv",
+            "run",
+            "--with",
+            "ida-hcli>=0.15",
+            "hcli",
+            "ida",
+            "set-default",
+            ida_install_dir,
+        ],
         env=env,
         capture_output=True,
         text=True,
     )
     if result.returncode != 0:
-        pytest.fail(f"hcli ida set-default failed:\nstdout: {result.stdout}\nstderr: {result.stderr}")
+        pytest.fail(
+            f"hcli ida set-default failed:\nstdout: {result.stdout}\nstderr: {result.stderr}"
+        )
 
     accept_eula_script = """
 import idapro
@@ -69,7 +82,9 @@ ida_registry.reg_write_int("AutoCheckUpdates", 0)
         text=True,
     )
     if result.returncode != 0:
-        pytest.fail(f"EULA acceptance failed:\nstdout: {result.stdout}\nstderr: {result.stderr}")
+        pytest.fail(
+            f"EULA acceptance failed:\nstdout: {result.stdout}\nstderr: {result.stderr}"
+        )
 
     plugin_zip = base_path / "oplog.zip"
     shutil.make_archive(
@@ -80,14 +95,25 @@ ida_registry.reg_write_int("AutoCheckUpdates", 0)
     )
 
     result = subprocess.run(
-        ["uv", "run", "--with", "ida-hcli>=0.15", "hcli", "plugin", "install", str(plugin_zip)],
+        [
+            "uv",
+            "run",
+            "--with",
+            "ida-hcli>=0.15",
+            "hcli",
+            "plugin",
+            "install",
+            str(plugin_zip),
+        ],
         env=env,
         capture_output=True,
         text=True,
     )
 
     if result.returncode != 0:
-        pytest.fail(f"hcli plugin install failed:\nstdout: {result.stdout}\nstderr: {result.stderr}")
+        pytest.fail(
+            f"hcli plugin install failed:\nstdout: {result.stdout}\nstderr: {result.stderr}"
+        )
 
     return idauser
 

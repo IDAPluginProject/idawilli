@@ -7,11 +7,12 @@ expect to see the assembly pattern:
   mov [stack], reg
   mov [stack], $size
 """
-import idc
-import ida_ua
-import ida_name
+
 import ida_bytes
+import ida_name
+import ida_ua
 import idautils
+import idc
 
 
 def enum_segments():
@@ -22,7 +23,7 @@ def enum_segments():
 
 
 def find_pointers(start, end):
-    for va in range(start, end-0x8):
+    for va in range(start, end - 0x8):
         ptr = ida_bytes.get_qword(va)
         if idc.get_segm_start(ptr) == idc.BADADDR:
             continue
@@ -60,7 +61,7 @@ def main():
             #
             #   lea     rax, unk_6BDF88
             #   mov     [rsp+0], rax
-            #   mov     qword ptr [rsp+8], 40h 
+            #   mov     qword ptr [rsp+8], 40h
             if ida_ua.ua_mnem(head) != "lea":
                 continue
 
@@ -101,5 +102,6 @@ def main():
             ida_bytes.set_cmt(dst, s, True)
             ida_name.set_name(dst, "s_%x" % (dst))
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()

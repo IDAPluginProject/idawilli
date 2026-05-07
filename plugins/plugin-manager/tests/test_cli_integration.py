@@ -21,7 +21,9 @@ def test_mirror_single_package():
         assert (repo_path / "packages").exists()
 
         for package in ["requests", "certifi", "urllib3", "charset-normalizer", "idna"]:
-            assert (repo_path / package).exists(), f"Package {package} not found in {repo_path / 'packages'}"
+            assert (repo_path / package).exists(), (
+                f"Package {package} not found in {repo_path / 'packages'}"
+            )
 
 
 def test_mirror_all():
@@ -40,4 +42,6 @@ def test_mirror_all():
         assert (repo_path / "packages").exists()
 
         for package in ["basic-ida-plugin", "multifile-ida-plugin"]:
-            assert (repo_path / package).exists(), f"Package {package} not found in {repo_path / 'packages'}"
+            assert (repo_path / package).exists(), (
+                f"Package {package} not found in {repo_path / 'packages'}"
+            )

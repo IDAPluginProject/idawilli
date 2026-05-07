@@ -4,15 +4,15 @@ search for and patch out known opaque predicates within IDA Pro workspaces.
 just run the script and it will manipulate the open database.
 therefore, you should probably create a backup first.
 """
+
 import logging
 from pprint import pprint
 
-import ida_idp
-import idautils
 import ida_auto
 import ida_bytes
+import ida_idp
 import ida_segment
-
+import idautils
 
 logger = logging.getLogger("deob")
 
