@@ -7,7 +7,7 @@ requires-python = ">=3.10"
 authors = [
     { name = "Willi Ballenthin", email = "wballenthin@hex-rays.com" },
 ]
-dependencies = []
+dependencies = ["rich"]
 
 [dependency-groups]
 dev = [
