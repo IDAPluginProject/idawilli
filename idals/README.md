@@ -7,31 +7,6 @@ idals is an IDA Pro-powered command-line tool for binary inspection.
 - IDA Pro installation
 - a usable idapro runtime setup (for example via IDADIR)
 
-## installation
-
-From PyPI:
-
-```bash
-pip install idals
-```
-
-With uvx.sh:
-
-```bash
-curl -LsSf uvx.sh/idals/install.sh | sh
-```
-
-Windows:
-
-```powershell
-powershell -ExecutionPolicy ByPass -c "irm https://uvx.sh/idals/install.ps1 | iex"
-```
-
-Install a pinned version:
-
-```bash
-curl -LsSf uvx.sh/idals/0.1.0.dev0/install.sh | sh
-```
 
 ## usage
 
