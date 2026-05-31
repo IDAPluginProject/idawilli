@@ -602,10 +602,6 @@ class global_struct_dissector_plugmod_t(ida_idaapi.plugmod_t):
 
     def init(self):
         """Initialize the plugin."""
-        if not ida_auto.auto_is_ok():
-            logger.debug("Waiting for auto-analysis to complete")
-            ida_auto.auto_wait()
-
         self.register_hooks()
         logger.info(
             "Global Struct Dissector plugin loaded (set logging to DEBUG for diagnostics)"
